@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WaltonChain</title> 
+    <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+    <meta name="format-detection" content="telephone=no,email=no,address=no"> 
+    <link rel='icon' href='../img/icon.ico' type='image/x-ico' />
+    <script type="text/javascript" src="../../vendor/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.easing.1.3.min.js"></script>
+    <script type="text/javascript" src="../../vendor/clipboard.min.js"></script>
+</head>
+
+
+<body class="body_css">
+    <!--主页面容器-->
+    <div id="id_main_page" class="main_page">
+        <div id="id_searchBlock_block" style="position:absolute; top:500px;">
+            <div id="id_searchBlock_block_btn_pre" class="searchBlock_block_btn textBtn" style="left:0px; top:0px; text-align:left;">< Previous 0</div>
+            <div id="id_searchBlock_block_btn_next" class="searchBlock_block_btn textBtn" style="left:1000px; top:0px; text-align:right;">Next 0 ></div>
+            <div id="id_searchBlock_block_info" style="position:absolute; top:50px;"></div>
+        </div>
+        <div id="id_searchBlock_tran" style="position:absolute; top:1060px;">
+            <div id="id_searchBlock_tran_title" class="title_blue" style="position:absolute; left:15px;">Transactions Details (Total 0 Records)</div>
+            <div id="id_searchBlock_tran_info" style="position:absolute; top:45px;"></div>
+        </div>
+        <input type="text" id="id_input_copy" style="opacity:0;"/>
+    </div>
+
+    <div id="id_header"></div>
+    <div id="id_desc"></div>
+    <div id="id_footer"></div>
+    <div id="id_popupwin"></div>
+    <div id="id_tips"></div>
+    <div id="id_btnTop"></div>
+
+<script>
+/////////////////// 初始化基础配置相关 ///////////////////
+var zHead = document.getElementsByTagName('head')[0];
+var zScript = document.createElement('script');
+zScript.type = 'text/javascript';
+zScript.src = '../lib/mine/common.js?ver='+$.cookie('commonJsVer');
+zScript.onload = zScript.onreadystatechange = function() {
+    if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete" ){
+        common.init(['cp_headerB', 'cp_footerB', "cp_desc", "cp_tipsA", "cp_btn_top"]);
+    }
+}
+zHead.appendChild(zScript);
+var id_interval = 0;
+window.onload = function ready(){id_interval=setInterval(function(){if(common!=undefined && common.JS_IS_LOADED==true){clearInterval(id_interval); init();}}, 100);};
+/////////////////// 初始化基础配置相关 ///////////////////
+window.onresize = windowResize;
+
+var endHeight = 1290;
+var latestBlock = 0;//最新的block
+var curBlock = 0;   //当前的bloc
+
+
+//字体不够长变...
+//<div style="position:absolute; top:400px; color:#fff; width:200px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">00000000000000000000000000000000000000</div>
+
+//初始化
+function init() {
+    parseParam();
+    common.init();
+
+    cp_headerB.init("id_header", 1);
+    cp_desc.init("id_desc");
+    cp_footerB.init("id_footer");
+    // cp_footerB.updateTop(endHeight);
+    cp_btn_top.init("id_btnTop");
+    // curBlock = parseInt(common.getCookie("searchBlock"));
+    
+    $('#id_searchBlock_block_btn_pre').click({myType:"id_searchBlock_block_btn_pre"}, btnClickHandler);
+    $('#id_searchBlock_block_btn_next').click({myType:"id_searchBlock_block_btn_next"}, btnClickHandler);
+
+    $('#id_searchBlock_block_btn_pre').hide();
+    $('#id_searchBlock_block_btn_next').hide();
+
+    windowResize();
+    php_getBlockInfo();
+    php_getLatestBlock();
+
+    timerRun();
+    timerId = setInterval(timerRun, common.REFRESH_TIME);
+    setTimeout(function(){cp_footerB.updateTop(endHeight);}, 500);
+}
+
+function parseParam(){
+    var curWwwPath = window.document.location.href;
+    var start_pos = curWwwPath.indexOf("?");
+    var end_pos = curWwwPath.indexOf("&");
+    curBlock = curWwwPath.substring(start_pos+1, end_pos);
+
+    var isPc = curWwwPath.indexOf("/pc/")!=-1?true:false;
+    var zNewWWW = curWwwPath;
+    var zWidth = parseInt(window.screen.width);
+    console.log(isPc, zWidth);
+    if(zWidth > 750){
+        if(isPc==false){
+            zNewWWW = zNewWWW.replace("/mobile/", "/pc/");
+            common.gotoWebSite(zNewWWW);
+        }
+    }else{
+        if(isPc==true){
+            zNewWWW = zNewWWW.replace("/pc/", "/mobile/");
+            common.gotoWebSite(zNewWWW);
+        }
+    }
+}
+
+//窗口尺寸重置
+function windowResize()
+{
+    var zScale = common.initScale(1);
+    zScale = (zScale<1) ? 1 : zScale;
+
+    var zMyWidth = document.body.clientWidth;
+    var zObjWidth = parseInt($('#id_main_page').css("width"))*zScale;
+    
+    var zMiddleWidth = (zMyWidth-zObjWidth)/2/zScale;
+    $('#id_main_page').css({"left":zMiddleWidth+"px"});
+    cp_headerB.windowResize(zMiddleWidth);
+    cp_desc.windowResize(zMiddleWidth);
+    cp_footerB.windowResize(zMiddleWidth);
+    cp_footerB.updateTop(endHeight);
+}
+
+//按钮点击事件
+function btnClickHandler(p_obj_event){
+    var zInput = document.querySelector('#id_input_copy');
+    switch(p_obj_event.data.myType){
+        case "id_searchBlock_block_btn_pre":
+            cp_headerB.goToSearch(1, (parseInt(curBlock)-1));
+            break;
+        case "id_searchBlock_block_btn_next":
+            cp_headerB.goToSearch(1, (parseInt(curBlock)+1));
+            break;
+        case "id_searchTran_btn_copy_8":
+            zInput.value = common.trim($('#id_searchTran_head_8').text());
+            zInput.select();
+            if (document.execCommand('copy')) {
+                document.execCommand('copy');
+                cp_tipsA.init('id_tips', 'id_searchTran_btn_copy_8', 'copy success');
+            }
+            break;
+    }
+}
+
+//按钮双击事件
+function btnDblClickHandler(p_obj_event){
+    var zInput = document.querySelector('#id_input_copy');
+    switch(p_obj_event.data.myType){
+        case "id_searchTran_head_8":
+            zInput.value = common.trim($('#id_searchTran_head_8').text());
+            zInput.select();
+            if (document.execCommand('copy')) {
+                document.execCommand('copy');
+                cp_tipsA.init('id_tips', 'id_searchTran_head_8', 'copy success');
+            }
+            break;
+    }
+}
+
+//显示pre next按钮
+function showBtn(){
+    $('#id_searchBlock_block_btn_pre').text("< Previous " + (parseInt(curBlock)-1));
+    $('#id_searchBlock_block_btn_pre').show();
+    if(curBlock < latestBlock){
+        $('#id_searchBlock_block_btn_next').text("Next "+ (parseInt(curBlock)+1) +" >");
+        $('#id_searchBlock_block_btn_next').show();
+    }
+}
+
+//更新块的消息
+function updateBlockInfo(p_info){
+    $("#id_searchBlock_block_info").html("");
+    var zHtmlCode = "";
+    var zInfoList = [   ["BLOCK NUMBER", p_info["blockNumber"]],
+                        ["SIZE", p_info["size"]],
+                        ["TRANSACTION COUNT", p_info["transactionCount"]],
+                        ["TRANSACTION REWARD", p_info["transaction_reward"]],
+                        ["MINING REWARD", p_info["mining_reward"]],
+                        ["DIFFICULTY", p_info["difficulty"]],
+                        ["NONCE", p_info["nonce"]],
+                        ["TIMESTAMP", p_info["timestamp"]],
+                        ["MINER", p_info["miner"]],
+                        ["BLOCK HASH", p_info["blockHash"]]
+                    ];
+    for(var i=0; i<zInfoList.length; i++){
+        var zInfo = zInfoList[i];
+        var zTop = i * 45;
+        var zTopB = i * 45;
+        zTopB = (i==0) ? 45 : zTopB;
+        var zSpace = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        var zLineClassX = "xLine_1200_0";
+        var zLineClassY = "yLine_345_450";
+        var zColorClass = "tb_b_txt";
+        var zDisplay = "display:none;";
+        if(i>0){
+            zLineClassY = "";
+        }else{
+            zLineClassX = "";
+        }
+        if(i==8){
+            zColorClass = "tb_b_txt txt_copy btn_light_middle textCanSelect";
+            zDisplay = "";
+        }
+        zHtmlCode += '\
+                        <div class="tb_a '+zLineClassX+' '+zLineClassY+'" style="top:'+zTop+'px;">'+zSpace+zInfo[0]+'</div>\
+                        <div class="tb_b" style="top:'+zTop+'px;"></div>\
+                        <div id="id_searchTran_head_'+i+'" class="'+zColorClass+'" style="top:'+zTop+'px;">'+zSpace+zInfo[1]+'</div>\
+                        <div id="id_searchTran_btn_copy_'+i+'" class="adb btn_light_middle" style="left:355px; top:'+(zTop+10)+'px; '+zDisplay+'"><img src="../img/btn_copy.png"></div>\
+                    ';
+    }
+    $("#id_searchBlock_block_info").html(zHtmlCode);
+    $('#id_searchTran_btn_copy_8').click({myType:"id_searchTran_btn_copy_8"}, btnClickHandler);
+    $('#id_searchTran_head_8').dblclick({myType:"id_searchTran_head_8"}, btnDblClickHandler);
+
+    var zTranList = p_info["txs_in_blocks"];
+    updateTranList(zTranList);
+}
+
+//更新Block表
+function updateTranList(p_list){
+    if(!p_list){
+        console.log("searchBlock.updateTranList() 更新失败, p_list。");
+        return;
+    }
+
+    //更新标题
+    $("#id_searchBlock_tran_title").text("Transactions Details (Total "+p_list.length+" Records)");
+
+    //标题
+    var zTopTotal = 0;
+    var zHtmlCode = "";
+    zHtmlCode += '\
+                <div class="bg_60_a xLine_1200_70" style="height:70px !important;">\
+                    <div class="txtTableHead" style="width:260px; left:0px;">Hash</div>\
+                    <div class="txtTableHead" style="width:260px; left:260px;">Sender</div>\
+                    <div class="txtTableHead" style="width:260px; left:520px;">Receiver</div>\
+                    <div class="txtTableHead" style="width:120px; left:780px;">Amout</div>\
+                    <div class="txtTableHead" style="width:170px; left:900px;">Gas</div>\
+                    <div class="txtTableHead" style="width:130px; left:1070px;">Gas Price</div>\
+                </div>\
+                ';
+    //内容
+    if(p_list.length==0){
+        zTopTotal = 70;
+        zHtmlCode +=    '<div class="bg_60_b xLine_1200_60" style="top:'+zTopTotal+'px;">\
+                            <div class="txtTableContent_white" style="width:1200px; left:0px;">No Data</div>\
+                        </div>';
+        zTopTotal += 60;
+    }else{
+        for(var i=0; i<p_list.length; i++){
+            var zInfo = p_list[i];
+            zTopTotal = i*60 + 70;
+            var zBgClass = "bg_60_b";
+            var zHash = zInfo[0];
+            var zSender = zInfo[2];
+            var zReceiver = zInfo[3];
+            var zAmout = parseInt(zInfo[4])/1000000000;
+            var zGas = zInfo[6];
+            var zGasPrice = (parseInt(zInfo[7])/10) + "e-8";
+            if(i%2==1){
+                zBgClass = "bg_60_a";
+            }
+            var zLineClassX = "";
+            if(i==p_list.length-1){
+                zLineClassX = "xLine_1200_60";
+            }
+            zHtmlCode += '\
+                    <div class="'+zBgClass+' '+zLineClassX+'" style="top:'+zTopTotal+'px;">\
+                        <div id="id_searchBlock_table_txt1_'+i+'" class="txtTableContent_blue textBtn" style="width:260px; left:0px;" onclick="onTranHashClickHandle('+i+')">'+zHash+'</div>\
+                        <div id="id_searchBlock_table_txt2_'+i+'" class="txtTableContent_blue textBtn" style="width:260px; left:260px;" onclick="onTranSenderClickHandle('+i+')">'+zSender+'</div>\
+                        <div id="id_searchBlock_table_txt3_'+i+'" class="txtTableContent_blue textBtn" style="width:260px; left:520px;" onclick="onTranRecieverClickHandle('+i+')">'+zReceiver+'</div>\
+                        <div class="txtTableContent_white" style="width:120px; left:780px;">'+zAmout+'</div>\
+                        <div class="txtTableContent_white" style="width:170px; left:900px;">'+zGas+'</div>\
+                        <div class="txtTableContent_white" style="width:130px; left:1070px;">'+zGasPrice+'</div>\
+                    </div>\
+                    ';
+        }
+        zTopTotal += 60;
+    }
+    $("#id_searchBlock_tran_info").html(zHtmlCode);
+
+    //更新底部栏
+    endHeight = 1060 + zTopTotal + 100;
+    cp_footerB.updateTop(endHeight);
+}
+
+
+//Tran-Hash被点击
+function onTranHashClickHandle(p_int_index){
+    var zSearchValue = $('#id_searchBlock_table_txt1_'+p_int_index).text();
+    cp_headerB.goToSearch(3, zSearchValue);
+}
+
+//Tran-Sender被点击
+function onTranSenderClickHandle(p_int_index){
+    var zSearchValue = $('#id_searchBlock_table_txt2_'+p_int_index).text();
+    cp_headerB.goToSearch(2, zSearchValue);
+}
+
+//Tran-Reciever被点击
+function onTranRecieverClickHandle(p_int_index){
+    var zSearchValue = $('#id_searchBlock_table_txt3_'+p_int_index).text();
+    cp_headerB.goToSearch(2, zSearchValue);
+}
+
+
+//定时运行(1分钟)
+function timerRun(){
+    cp_desc.updateDescInfo();
+}
+
+//////////////////////////////////// php相关 ////////////////////////////////////
+function php_getBlockInfo(){
+    var zBlockNum = common.getCookie("searchBlock");
+    if(!zBlockNum || zBlockNum==0){
+        console.log("php_getBlockInfo error:"+error.msg);
+        return
+    }
+    $.ajax({
+        url: common.getPhpUrl("getBlockInfo/"+zBlockNum),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getBlockInfo success:");
+            console.log(evt);
+            if(evt.block_details && evt.block_details[0]){
+                updateBlockInfo(evt.block_details[0]);
+            }else{
+                console.log("php_getBlockInfo block_details内容为空。");
+            }
+        },error: function(error){
+            console.log("php_getBlockInfo error:"+error.msg);
+        }
+    });
+}
+
+function php_getLatestBlock(){
+    $.ajax({
+        url: common.getPhpUrl("getLatestBlock"),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getLatestBlock success:");
+            console.log(evt);
+            latestBlock = parseInt(evt.latest_block);
+            common.setCookie("desc_1", latestBlock);
+            cp_desc.getBlockInfo();
+            showBtn();
+        },error: function(error){
+            console.log("php_getLatestBlock error:"+error.msg);
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>

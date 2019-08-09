@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>WaltonChain</title> 
+    <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+    <link rel='icon' href='../img/icon.ico' type='image/x-ico' />
+    <link rel="stylesheet" href="../../vendor/videojs/video-js.css">
+    <script type="text/javascript" src="../../vendor/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../vendor/videojs/video.min.js"></script>
+</head>
+
+
+<body class="body_css">
+    <!--主页面容器-->
+    <div id="id_main_page" class="main_page">
+        <div style="position:absolute; top:480px;">
+            <div style="position:absolute; width:1200px; color:#fff; font-size:24px;">Waltonchain is a blockchain + loT (VloT) ecosystem</div>
+            <div style="position:absolute; top:50px; width:1200px; color:#fff; font-size:16px; font-family:Microsoft YaHei; font-weight:100;">We use the blockchain technology to lead humanity into a reliable digital life and realize consensus, <br>co-governance , co-sharing and co-integration of loT data and services in the information era.</div>
+            <div style="position:absolute; left:0px; top:120px;">
+                <video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" width="1200" height="600" poster="../img/videoPage.jpg" data-setup="{}">
+                    <source src="https://www.waltonchain.org/templets/default/v/wtc_cn.mp4" type="video/mp4">
+                    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                </video>
+            </div>
+
+            <div style="position:absolute; top:800px; width:1200px; color:#fff; font-size:24px;">Core advantages of Waltonchain</div>
+            <img style="position:absolute; top:850px;" src="../img/about_1.jpg">
+
+            <div style="position:absolute; top:1250px; width:1200px; color:#fff; font-size:24px;">Project Planning</div>
+            <img style="position:absolute; top:1300px;" src="../img/about_2.jpg">
+
+            <div style="position:absolute; top:1930px; width:1200px; color:#fff; font-size:24px;">Team</div>
+            <div id="id_about_btn_more" class="textBtn" style="position:absolute; left:1100px; top:1940px; width:100px; color:#aaa; font-size:16px; text-align:right;">MORE ></div>
+            <div class="about_p_bg" style="left:0px; top:1980px;">
+                <img style="position:absolute;" src="../img/about_p_1.jpg">
+                <div class="about_txt_1">Xu Fangcheng</div>
+                <div class="about_txt_2">(INITATOR IN CHINA)</div>
+                <div class="about_txt_3">Chinese, majored in Business Management, former Director for Supply Chain Management ofSeptwolves Group Ltd., has rich practical experience in supply chain management and purchasingprocess management. Angle investor.</div>
+            </div>
+            <div class="about_p_bg" style="left:615px; top:1980px;">
+                <img style="position:absolute;" src="../img/about_p_2.jpg">
+                <div class="about_txt_1">Do Sang Hyuk</div>
+                <div class="about_txt_2">(INITATOR IN KOREA)</div>
+                <div class="about_txt_3">Korean, Vice Chairman of the China-Korea Cultural Exchange Development Committee, Chairman of Korea NC Technology Co., Ltd., former Director of the South Korea Electronic News Media Bureau, Director of ET NEWS, Former Director of Korean Standards Association, Chairman of Small and Medium-Sized Enterprise Committee in Seongnam, South Korea.</div>
+            </div>
+            <div class="about_p_bg" style="left:0px; top:2180px;">
+                <img style="position:absolute;" src="../img/about_p_3.jpg">
+                <div class="about_txt_1">Kim Suk Ki</div>
+                <div class="about_txt_2">(INITATOR IN THINGS)</div>
+                <div class="about_txt_3" style="top:35px !important;">Korean, one of the key persons in the South Korean electronics industry, Doctor of Engineering, previously worked at Bell Labs and Honeywell USA,served as vice president at Samsung Electronics, senior expert in integrated circuit design, IEEE Senior Member, Vice President of the Korea Institute of Electrical Engineers, Chairman of the Korea Semiconductor Industry Association. Has published more than 250 academic papers and possesses more than 60 patents.</div>
+            </div>
+            <div class="about_p_bg" style="left:615px; top:2180px;">
+                <img style="position:absolute;" src="../img/about_p_4.jpg">
+                <div class="about_txt_1">Zhu Yanping</div>
+                <div class="about_txt_2">(BLOCKCHAIN)</div>
+                <div class="about_txt_3">Taiwanese, Doctor of Engineering (graduated from National Cheng Kung University), Chairman ofthe Cloud Computing & loT Association in Taiwan. Won the Taiwan Ministry of Education YouthInvention Award and Taiwan Top Ten Information Talent Award. Has deeply studied blockchainapplications over the years and led a blockchain team to develop systems for healthcare bigdata and agricultural traceability projects.</div>
+            </div>
+
+            <div style="position:absolute; top:2440px; width:1200px; color:#fff; font-size:24px;">Partners</div>
+            <div id="id_about_partner" style="position:absolute; left:0px; top:2490px;">
+                <img class="about_p_img" style="left:0px;" src="../img/about_p_1.jpg">
+                <img class="about_p_img" style="left:204px;" src="../img/about_p_1.jpg">
+            </div>
+        </div>
+    </div>
+
+    <div id="id_header"></div>
+    <div id="id_desc"></div>
+    <div id="id_footer"></div>
+    <div id="id_popupwin"></div>
+    <div id="id_tips"></div>
+    <div id="id_btnTop"></div>
+    
+<script>
+/////////////////// 初始化基础配置相关 ///////////////////
+var zHead = document.getElementsByTagName('head')[0];
+var zScript = document.createElement('script');
+zScript.type = 'text/javascript';
+zScript.src = '../lib/mine/common.js?ver='+$.cookie('commonJsVer');
+zScript.onload = zScript.onreadystatechange = function() {
+    if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete" ){
+        common.init(['cp_headerB', 'cp_footerB', "cp_desc", "cp_btn_top"]);
+    }
+}
+zHead.appendChild(zScript);
+var id_interval = 0;
+window.onload = function ready(){id_interval=setInterval(function(){if(common!=undefined && common.JS_IS_LOADED==true){clearInterval(id_interval); init();}}, 100);};
+/////////////////// 初始化基础配置相关 ///////////////////
+window.onresize = windowResize;
+var endHeight = 3600;
+
+//初始化
+function init() {
+    common.init();
+    cp_headerB.init("id_header", 5);
+    cp_desc.init("id_desc");
+    cp_footerB.init("id_footer");
+    // cp_footerB.updateTop(endHeight);
+    cp_btn_top.init("id_btnTop");
+    $('#id_about_btn_more').click({myType:"id_about_btn_more"}, btnClickHandler);
+
+    initPartner();
+
+    windowResize();
+
+    timerRun();
+    timerId = setInterval(timerRun, common.REFRESH_TIME);
+    $('#id_main_page').show();
+    setTimeout(function(){cp_footerB.updateTop(endHeight);}, 500);
+}
+
+//窗口尺寸重置
+function windowResize()
+{
+    var zScale = common.initScale(1);
+    zScale = (zScale<1) ? 1 : zScale;
+
+    var zMyWidth = document.body.clientWidth;
+    var zObjWidth = parseInt($('#id_main_page').css("width"))*zScale;
+    
+    var zMiddleWidth = (zMyWidth-zObjWidth)/2/zScale;
+    $('#id_main_page').css({"left":zMiddleWidth+"px"});
+    cp_headerB.windowResize(zMiddleWidth);
+    cp_desc.windowResize(zMiddleWidth);
+    cp_footerB.windowResize(zMiddleWidth);
+    cp_footerB.updateTop(endHeight);
+}
+
+//初始化partner图片
+function initPartner(){
+    var zHtmlCode = "";
+    $("#id_about_partner").html(zHtmlCode);
+    for(var i=0; i<18; i++){
+        var zImgId = i+1;
+        var zLeft = i%6*201;
+        var zTop = Math.floor(i/6)*180;
+        zHtmlCode += '\
+                <img class="about_p_img" style="left:'+zLeft+'px; top:'+zTop+'px;" src="../img/'+zImgId+'logo.jpg">\
+                ';
+    }
+    
+    $("#id_about_partner").html(zHtmlCode);
+}
+
+//按钮点击事件
+function btnClickHandler(p_obj_event){
+    switch(p_obj_event.data.myType){
+        case "id_about_btn_more":
+            common.gotoWebSite('https://www.waltonchain.org/');
+            break;
+    }
+}
+
+
+//定时运行(1分钟)
+function timerRun(){
+    cp_desc.updateDescInfo();
+}
+
+
+//////////////////////////////////// php相关 ////////////////////////////////////
+
+
+
+</script>
+
+</body>
+</html>

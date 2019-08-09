@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>WaltonChain</title> 
+    <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+    <link rel='icon' href='../img/icon.ico' type='image/x-ico' />
+    <script type="text/javascript" src="../../vendor/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.easing.1.3.min.js"></script>
+    <script type="text/javascript" src="../../vendor/highcharts/highcharts.js"></script>
+    <script type="text/javascript" src="../../vendor/highcharts/modules/map.js"></script>
+    <script type="text/javascript" src="../../vendor/highcharts/map/world.js"></script>
+</head>
+
+
+<body class="body_css">
+    <!--主页面容器-->
+    <div id="id_main_page" class="main_page" >
+        <div style="position:absolute; top:730px;">
+            <div class="title_blue" style="position:absolute; left:15px;">WTC CURRENT NODE DISTRIBUTION</div>
+            <div id="id_chart_1" style="position:absolute; top:50px; width:700px; height:500px;"></div>
+        </div>
+        <div style="position:absolute; top:1330px;">
+            <div class="title_green" style="position:absolute; left:15px;">WTC NODE DISTRIBUTION IN THE PAST 12 HOURS</div>
+            <div id="id_chart_2" style="position:absolute; top:50px; width:700px; height:500px;"></div>
+        </div>
+        <div style="position:absolute; top:1930px;">
+            <div class="title_blue" style="position:absolute; left:15px;">WTC BALANCE DISTRIBUTION</div>
+            <div id="id_chart_3" style="position:absolute; top:50px; width:700px; height:500px;"></div>
+        </div>
+        <div style="position:absolute; top:2530px;">
+            <div class="title_blue" style="position:absolute; left:15px;">WTC MINER DISTRIBUTION</div>
+            <div id="id_chart_4" style="position:absolute; top:50px; width:700px; height:500px;"></div>
+        </div>
+        <div style="position:absolute; top:3130px;">
+            <div class="title_green" style="position:absolute; left:15px;">WTC LATEST 50 INTER-BLOCK TIME</div>
+            <div id="id_chart_5" style="position:absolute; top:50px; width:700px; height:500px;"></div>
+        </div>
+        <div style="position:absolute; top:3730px;">
+            <div class="title_green" style="position:absolute; left:15px;">WTC LATEST 50 BLOCKS DIFFICULTY CHANGE</div>
+            <div id="id_chart_6" style="position:absolute; top:50px; width:700px; height:500px;"></div>
+        </div>
+    </div>
+
+    <div id="id_header"></div>
+    <div id="id_desc" style="position:absolute; top:131px;"></div>
+    <div id="id_footer"></div>
+    <div id="id_popupwin"></div>
+    <div id="id_tips"></div>
+    <div id="id_btnTop"></div>
+    
+
+<script>
+/////////////////// 初始化基础配置相关 ///////////////////
+var zHead = document.getElementsByTagName('head')[0];
+var zScript = document.createElement('script');
+zScript.type = 'text/javascript';
+zScript.src = '../lib/mine/common.js?ver='+$.cookie('commonJsVer');
+zScript.onload = zScript.onreadystatechange = function() {
+    if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete" ){
+        common.init(['cp_headerB', 'cp_footerB', "cp_desc", "cp_btn_top"]);
+    }
+}
+zHead.appendChild(zScript);
+var id_interval = 0;
+window.onload = function ready(){id_interval=setInterval(function(){if(common!=undefined && common.JS_IS_LOADED==true){clearInterval(id_interval); init();}}, 100);};
+/////////////////// 初始化基础配置相关 ///////////////////
+window.onresize = windowResize;
+
+var endHeight = 4350;
+var mapBgList = [{"code3": "ABW","z": 0,"code": "AW"},{"code3": "AFG","z": 0,"code": "AF"},{"code3": "AGO","z": 0,"code": "AO"},{"code3": "ALB","z": 0,"code": "AL"},{"code3": "AND","z": 0,"code": "AD"},{"code3": "ARE","z": 0,"code": "AE"},{"code3": "ARG","z": 0,"code": "AR"},{"code3": "ARM","z": 0,"code": "AM"},{"code3": "ASM","z": 0,"code": "AS"},{"code3": "ATG","z": 0,"code": "AG"},{"code3": "AUS","z": 0,"code": "AU"},{"code3": "AUT","z": 0,"code": "AT"},{"code3": "AZE","z": 0,"code": "AZ"},{"code3": "BDI","z": 0,"code": "BI"},{"code3": "BEL","z": 0,"code": "BE"},{"code3": "BEN","z": 0,"code": "BJ"},{"code3": "BFA","z": 0,"code": "BF"},{"code3": "BGD","z": 0,"code": "BD"},{"code3": "BGR","z": 0,"code": "BG"},{"code3": "BHR","z": 0,"code": "BH"},{"code3": "BHS","z": 0,"code": "BS"},{"code3": "BIH","z": 0,"code": "BA"},{"code3": "BLR","z": 0,"code": "BY"},{"code3": "BLZ","z": 0,"code": "BZ"},{"code3": "BMU","z": 0,"code": "BM"},{"code3": "BOL","z": 0,"code": "BO"},{"code3": "BRA","z": 0,"code": "BR"},{"code3": "BRB","z": 0,"code": "BB"},{"code3": "BRN","z": 0,"code": "BN"},{"code3": "BTN","z": 0,"code": "BT"},{"code3": "BWA","z": 0,"code": "BW"},{"code3": "CAF","z": 0,"code": "CF"},{"code3": "CAN","z": 0,"code": "CA"},{"code3": "CHE","z": 0,"code": "CH"},{"code3": "CHL","z": 0,"code": "CL"},{"code3": "CHN","z": 0,"code": "CN"},{"code3": "CIV","z": 0,"code": "CI"},{"code3": "CMR","z": 0,"code": "CM"},{"code3": "COD","z": 0,"code": "CD"},{"code3": "COG","z": 0,"code": "CG"},{"code3": "COL","z": 0,"code": "CO"},{"code3": "COM","z": 0,"code": "KM"},{"code3": "CPV","z": 0,"code": "CV"},{"code3": "CRI","z": 0,"code": "CR"},{"code3": "CUB","z": 0,"code": "CU"},{"code3": "CUW","z": 0,"code": "CW"},{"code3": "CYM","z": 0,"code": "KY"},{"code3": "CYP","z": 0,"code": "CY"},{"code3": "CZE","z": 0,"code": "CZ"},{"code3": "DEU","z": 0,"code": "DE"},{"code3": "DJI","z": 0,"code": "DJ"},{"code3": "DMA","z": 0,"code": "DM"},{"code3": "DNK","z": 0,"code": "DK"},{"code3": "DOM","z": 0,"code": "DO"},{"code3": "DZA","z": 0,"code": "DZ"},{"code3": "ECU","z": 0,"code": "EC"},{"code3": "EGY","z": 0,"code": "EG"},{"code3": "ERI","z": 0,"code": "ER"},{"code3": "ESP","z": 0,"code": "ES"},{"code3": "EST","z": 0,"code": "EE"},{"code3": "ETH","z": 0,"code": "ET"},{"code3": "FIN","z": 0,"code": "FI"},{"code3": "FJI","z": 0,"code": "FJ"},{"code3": "FRA","z": 0,"code": "FR"},{"code3": "FRO","z": 0,"code": "FO"},{"code3": "FSM","z": 0,"code": "FM"},{"code3": "GAB","z": 0,"code": "GA"},{"code3": "GBR","z": 0,"code": "GB"},{"code3": "GEO","z": 0,"code": "GE"},{"code3": "GHA","z": 0,"code": "GH"},{"code3": "GIB","z": 0,"code": "GI"},{"code3": "GIN","z": 0,"code": "GN"},{"code3": "GMB","z": 0,"code": "GM"},{"code3": "GNB","z": 0,"code": "GW"},{"code3": "GNQ","z": 0,"code": "GQ"},{"code3": "GRC","z": 0,"code": "GR"},{"code3": "GRD","z": 0,"code": "GD"},{"code3": "GRL","z": 0,"code": "GL"},{"code3": "GTM","z": 0,"code": "GT"},{"code3": "GUM","z": 0,"code": "GU"},{"code3": "GUY","z": 0,"code": "GY"},{"code3": "HKG","z": 0,"code": "HK"},{"code3": "HND","z": 0,"code": "HN"},{"code3": "HRV","z": 0,"code": "HR"},{"code3": "HTI","z": 0,"code": "HT"},{"code3": "HUN","z": 0,"code": "HU"},{"code3": "IDN","z": 0,"code": "ID"},{"code3": "IMN","z": 0,"code": "IM"},{"code3": "IND","z": 0,"code": "IN"},{"code3": "IRL","z": 0,"code": "IE"},{"code3": "IRN","z": 0,"code": "IR"},{"code3": "IRQ","z": 0,"code": "IQ"},{"code3": "ISL","z": 0,"code": "IS"},{"code3": "ISR","z": 0,"code": "IL"},{"code3": "ITA","z": 0,"code": "IT"},{"code3": "JAM","z": 0,"code": "JM"},{"code3": "JOR","z": 0,"code": "JO"},{"code3": "JPN","z": 0,"code": "JP"},{"code3": "KAZ","z": 0,"code": "KZ"},{"code3": "KEN","z": 0,"code": "KE"},{"code3": "KGZ","z": 0,"code": "KG"},{"code3": "KHM","z": 0,"code": "KH"},{"code3": "KIR","z": 0,"code": "KI"},{"code3": "KNA","z": 0,"code": "KN"},{"code3": "KOR","z": 0,"code": "KR"},{"code3": "KWT","z": 0,"code": "KW"},{"code3": "LAO","z": 0,"code": "LA"},{"code3": "LBN","z": 0,"code": "LB"},{"code3": "LBR","z": 0,"code": "LR"},{"code3": "LBY","z": 0,"code": "LY"},{"code3": "LCA","z": 0,"code": "LC"},{"code3": "LIE","z": 0,"code": "LI"},{"code3": "LKA","z": 0,"code": "LK"},{"code3": "LSO","z": 0,"code": "LS"},{"code3": "LTU","z": 0,"code": "LT"},{"code3": "LUX","z": 0,"code": "LU"},{"code3": "LVA","z": 0,"code": "LV"},{"code3": "MAC","z": 0,"code": "MO"},{"code3": "MAF","z": 0,"code": "MF"},{"code3": "MAR","z": 0,"code": "MA"},{"code3": "MCO","z": 0,"code": "MC"},{"code3": "MDA","z": 0,"code": "MD"},{"code3": "MDG","z": 0,"code": "MG"},{"code3": "MDV","z": 0,"code": "MV"},{"code3": "MEX","z": 0,"code": "MX"},{"code3": "MHL","z": 0,"code": "MH"},{"code3": "MKD","z": 0,"code": "MK"},{"code3": "MLI","z": 0,"code": "ML"},{"code3": "MLT","z": 0,"code": "MT"},{"code3": "MMR","z": 0,"code": "MM"},{"code3": "MNE","z": 0,"code": "ME"},{"code3": "MNG","z": 0,"code": "MN"},{"code3": "MNP","z": 0,"code": "MP"},{"code3": "MOZ","z": 0,"code": "MZ"},{"code3": "MRT","z": 0,"code": "MR"},{"code3": "MUS","z": 0,"code": "MU"},{"code3": "MWI","z": 0,"code": "MW"},{"code3": "MYS","z": 0,"code": "MY"},{"code3": "NAM","z": 0,"code": "NA"},{"code3": "NCL","z": 0,"code": "NC"},{"code3": "NER","z": 0,"code": "NE"},{"code3": "NGA","z": 0,"code": "NG"},{"code3": "NIC","z": 0,"code": "NI"},{"code3": "NLD","z": 0,"code": "NL"},{"code3": "NOR","z": 0,"code": "NO"},{"code3": "NPL","z": 0,"code": "NP"},{"code3": "NRU","z": 0,"code": "NR"},{"code3": "NZL","z": 0,"code": "NZ"},{"code3": "OMN","z": 0,"code": "OM"},{"code3": "PAK","z": 0,"code": "PK"},{"code3": "PAN","z": 0,"code": "PA"},{"code3": "PER","z": 0,"code": "PE"},{"code3": "PHL","z": 0,"code": "PH"},{"code3": "PLW","z": 0,"code": "PW"},{"code3": "PNG","z": 0,"code": "PG"},{"code3": "POL","z": 0,"code": "PL"},{"code3": "PRI","z": 0,"code": "PR"},{"code3": "PRK","z": 0,"code": "KP"},{"code3": "PRT","z": 0,"code": "PT"},{"code3": "PRY","z": 0,"code": "PY"},{"code3": "PSE","z": 0,"code": "PS"},{"code3": "PYF","z": 0,"code": "PF"},{"code3": "QAT","z": 0,"code": "QA"},{"code3": "ROU","z": 0,"code": "RO"},{"code3": "RUS","z": 0,"code": "RU"},{"code3": "RWA","z": 0,"code": "RW"},{"code3": "SAU","z": 0,"code": "SA"},{"code3": "SDN","z": 0,"code": "SD"},{"code3": "SEN","z": 0,"code": "SN"},{"code3": "SGP","z": 0,"code": "SG"},{"code3": "SLB","z": 0,"code": "SB"},{"code3": "SLE","z": 0,"code": "SL"},{"code3": "SLV","z": 0,"code": "SV"},{"code3": "SMR","z": 0,"code": "SM"},{"code3": "SOM","z": 0,"code": "SO"},{"code3": "SRB","z": 0,"code": "RS"},{"code3": "SSD","z": 0,"code": "SS"},{"code3": "STP","z": 0,"code": "ST"},{"code3": "SUR","z": 0,"code": "SR"},{"code3": "SVK","z": 0,"code": "SK"},{"code3": "SVN","z": 0,"code": "SI"},{"code3": "SWE","z": 0,"code": "SE"},{"code3": "SWZ","z": 0,"code": "SZ"},{"code3": "SXM","z": 0,"code": "SX"},{"code3": "SYC","z": 0,"code": "SC"},{"code3": "SYR","z": 0,"code": "SY"},{"code3": "TCA","z": 0,"code": "TC"},{"code3": "TCD","z": 0,"code": "TD"},{"code3": "TGO","z": 0,"code": "TG"},{"code3": "THA","z": 0,"code": "TH"},{"code3": "TJK","z": 0,"code": "TJ"},{"code3": "TKM","z": 0,"code": "TM"},{"code3": "TLS","z": 0,"code": "TL"},{"code3": "TON","z": 0,"code": "TO"},{"code3": "TTO","z": 0,"code": "TT"},{"code3": "TUN","z": 0,"code": "TN"},{"code3": "TUR","z": 0,"code": "TR"},{"code3": "TUV","z": 0,"code": "TV"},{"code3": "TZA","z": 0,"code": "TZ"},{"code3": "UGA","z": 0,"code": "UG"},{"code3": "UKR","z": 0,"code": "UA"},{"code3": "URY","z": 0,"code": "UY"},{"code3": "USA","z": 0,"code": "US"},{"code3": "UZB","z": 0,"code": "UZ"},{"code3": "VCT","z": 0,"code": "VC"},{"code3": "VEN","z": 0,"code": "VE"},{"code3": "VGB","z": 0,"code": "VG"},{"code3": "VIR","z": 0,"code": "VI"},{"code3": "VNM","z": 0,"code": "VN"},{"code3": "VUT","z": 0,"code": "VU"},{"code3": "WSM","z": 0,"code": "WS"},{"code3": "YEM","z": 0,"code": "YE"},{"code3": "ZAF","z": 0,"code": "ZA"},{"code3": "ZMB","z": 0,"code": "ZM"},{"code3": "KVS","z": 0,"code": "KV"},{"code3": "EHA","z": 0,"code": "EH"},{"code3": "ZWE","z": 0,"code": "ZW"}];
+
+
+//初始化
+function init() {
+    common.init();
+    cp_headerB.init("id_header", 2);
+    cp_desc.init("id_desc");
+    cp_footerB.init("id_footer");
+    cp_footerB.updateTop(endHeight);
+    cp_btn_top.init("id_btnTop");
+    windowResize();
+
+    updateMapCur([], mapBgList);
+    updateMapPast12([], mapBgList);
+    updateBalanceDistribution([]);
+    updateMinerDistribution([]);
+    updateBlockTime([], []);
+    updateBlockDiff([], [], 300000000000);
+    php_getHistoryNodesDistribution12();
+    timerRun();
+    timerId = setInterval(timerRun, common.REFRESH_TIME);
+    $('#id_main_page').show();
+}
+
+//窗口尺寸重置
+function windowResize()
+{
+    var zScale = common.initScale(1);
+    zScale = (zScale<1) ? 1 : zScale;
+
+    var zMyWidth = document.body.clientWidth;
+    var zObjWidth = parseInt($('#id_main_page').css("width"))*zScale;
+    
+    var zMiddleWidth = (zMyWidth-zObjWidth)/2/zScale;
+    $('#id_main_page').css({"left":zMiddleWidth+"px"});
+    cp_headerB.windowResize(zMiddleWidth);
+    cp_desc.windowResize(zMiddleWidth);
+    cp_footerB.windowResize(zMiddleWidth);
+    cp_footerB.updateTop(endHeight);
+}
+
+//按钮点击事件
+function btnClickHandler(p_obj_event){
+    switch(p_obj_event.data.myType){
+        // case "id_searchBlock_block_btn_pre":
+        //     cp_headerB.goToSearch(1, (curBlock-1));
+        //     break;
+    }
+}
+
+//地图-1
+function updateMapCur(p_data, p_data_bg){
+    Highcharts.mapChart('id_chart_1', {
+        chart: {map: 'custom/world', backgroundColor:'#151826'},
+        title: {text:''},
+        subtitle: {text:''},
+        legend: {enabled: true},
+        credits:{enabled: false},
+        exporting:{enabled:false},
+        mapNavigation: {
+            enabled: true,
+            // backgroundColor:'#384151', 
+            buttonOptions: {
+                align : 'right',
+                style : {fontSize:'16px', fontWeight:'bold'},
+                verticalAlign: 'bottom'
+            }
+        },
+        series: [{
+            name: 'Countries',
+            color: '#414975',
+            joinBy: ['iso-a2', 'code'],
+            data: p_data_bg,
+            borderColor : "#151826",
+            enableMouseTracking: false
+        }, {
+            type: 'mapbubble',
+            // mapData: Highcharts.maps['custom/world'],
+            name: 'Node Count',
+            color: '#1caaaa',
+            joinBy: ['iso-a2', 'code'],
+            data: p_data,
+            minSize: 4,
+            maxSize: '12%',
+            tooltip: {
+                pointFormat: '{point.properties.hc-a2}: {point.z}'
+            }
+        }]
+    });
+}
+
+//地图-2
+function updateMapPast12(p_data, p_data_bg){
+    Highcharts.mapChart('id_chart_2', {
+        chart: {map:'custom/world', backgroundColor:'#151826'},
+        title: {text:''},
+        subtitle: {text:''},
+        legend: {enabled: true},
+        credits:{enabled: false},
+        exporting:{enabled:false},
+        mapNavigation: {
+            enabled: true,
+            // backgroundColor:'#384151', 
+            buttonOptions: {
+                align : 'right',
+                style : {fontSize:'16px', fontWeight:'bold'},
+                verticalAlign: 'bottom'
+            }
+        },
+        series: [{
+            name: 'Countries',
+            color: '#414975',
+            joinBy: ['iso-a2', 'code'],
+            data: p_data_bg,
+            borderColor : "#151826",
+            enableMouseTracking: false
+        }, {
+            type: 'mapbubble',
+            // mapData: Highcharts.maps['custom/world'],
+            name: 'Node Count',
+            color: '#1caaaa',
+            joinBy: ['iso-a2', 'code'],
+            data: p_data,
+            minSize: 4,
+            maxSize: '12%',
+            tooltip: {
+                pointFormat: '{point.properties.hc-a2}: {point.z}'
+            }
+        }]
+    });
+}
+
+//饼图-1
+function updateBalanceDistribution(p_list){
+    Highcharts.chart('id_chart_3', {
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            backgroundColor:'#151826',
+            type: 'pie'
+        },
+        title:{text:''},
+        credits:{enabled: false},
+        exporting:{enabled:false},
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                events: { 
+                    click: function(e) { 
+                        var zClickMiner = e.point.name;
+                        if(zClickMiner.indexOf("0x")!=-1){
+                            cp_headerB.goToSearch(2, zClickMiner);
+                        }
+                    } 
+                },
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.percentage:.1f} %',
+                    style: {
+                        color: 'white'
+                    }
+                }
+            }
+        },
+        series:[{
+            name: 'Balance',
+            colorByPoint: true,
+            data: p_list
+        }]
+    });
+}
+
+//饼图-2
+function updateMinerDistribution(p_list){
+    Highcharts.chart('id_chart_4', {
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            backgroundColor:'#151826',
+            type: 'pie'
+        },
+        title:{text:''},
+        credits:{enabled: false},
+        exporting:{enabled:false},
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                events: { 
+                    click: function(e) { 
+                        var zClickMiner = e.point.name;
+                        if(zClickMiner.indexOf("0x")!=-1){
+                            cp_headerB.goToSearch(2, zClickMiner);
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.percentage:.1f} %',
+                    style: {
+                        color: 'white'
+                    }
+                }
+            }
+        },
+        series:[{
+            name: 'Block Mined',
+            colorByPoint: true,
+            data: p_list
+        }]
+    });
+}
+
+//条图-1
+function updateBlockTime(p_list_x, p_list_y){
+    Highcharts.chart('id_chart_5', {
+        chart: {type:'column', backgroundColor:'#151826'},
+        title: {text: ''},
+        subtitle: {text: ''},
+        credits:{enabled: false},
+        exporting:{enabled:false},
+        legend: {enabled: false},
+        xAxis: {
+            categories: p_list_x,
+            lineColor: '#303446',
+            lineWidth: 1,
+            labels: {style:{color:'#a2a2a2'}},
+            title: {text:'Block', style:{color:'#a2a2a2'}},
+            tickInterval: 2,
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            gridLineColor: '#303446',
+            gridLineDashStyle: 'longdash',
+            lineColor: '#303446',
+            lineWidth: 1,
+            labels: {style:{color:'#a2a2a2'}},
+            title: {text:'Time (s)', style:{color:'#a2a2a2'}}
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">Block: <b>{point.key}</b></span><br>',
+            pointFormat:  '<span style="font-size:10px">Time:  <b>{point.y:.1f}s</b></span>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0
+            }
+        },
+        series: [{
+            name: 'Block',
+            color : "#5d61d8",
+            style : {color:"#a2a2a2"},
+            data: p_list_y
+        }]
+    });
+}
+
+//条图-2
+function updateBlockDiff(p_list_x, p_list_y, p_int_min){
+    Highcharts.chart('id_chart_6', {
+        chart: {type:'area', backgroundColor:'#151826'},
+        title: {text: ''},
+        subtitle: {text: ''},
+        credits:{enabled: false},
+        exporting:{enabled:false},
+        legend: {enabled: false},
+        xAxis: {
+            categories: p_list_x,
+            lineColor: '#303446',
+            lineWidth: 1,
+            labels: {style:{color:'#a2a2a2'}},
+            title: {text:'Block', style:{color:'#a2a2a2'}},
+            tickInterval: 2,
+            crosshair: true
+        },
+        yAxis: {
+            min: p_int_min,
+            gridLineWidth: 0,
+            lineColor: '#303446',
+            lineWidth: 1,
+            labels: {style:{color:'#a2a2a2'}},
+            title: {text:'Difficulty', style:{color:'#a2a2a2'}}
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">Block: <b>{point.key}</b></span><br>',
+            pointFormat:  '<span style="font-size:10px">Difficulty:  <b>{point.y}</b></span>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            series: {
+                fillColor: {
+                    linearGradient: [0, 0, 0, 300],
+                    stops: [
+                        [0, "#202449"],
+                        [1, Highcharts.Color("#202449").setOpacity(0).get('rgba')]
+                    ]
+                },
+                fillOpacity: 0.3,
+                lineColor: '#4949db'
+            }
+        },
+        series: [{
+            name: 'Block',
+            color : "#5d61d8",
+            style : {color:"#a2a2a2"},
+            data: p_list_y
+        }]
+    });
+}
+
+//定时运行(1分钟)
+function timerRun(){
+    php_getCurrentNodesDistribution();
+    php_getBlockDistribution();
+    php_getMinerDistribution();
+    php_getBlockTime();
+    php_getBlockDiff();
+
+    cp_desc.updateDescInfo();
+}
+
+
+//////////////////////////////////// php相关 ////////////////////////////////////
+function php_getCurrentNodesDistribution(){
+    $.ajax({
+        url: common.getPhpUrl("getCurrentNodesDistribution"),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getCurrentNodesDistribution success:");
+            console.log(evt);
+            var zList = [];
+            for(var key in evt) {  
+                var zInfo = {"z":parseInt(evt[key]), "code":key};
+                zList.push(zInfo);
+            } 
+            updateMapCur(zList, mapBgList);
+        },error: function(error){
+            console.log("php_getCurrentNodesDistribution error:"+error.msg);
+        }
+    });
+}
+
+function php_getHistoryNodesDistribution12(){
+    $.ajax({
+        url: common.getPhpUrl("getHistoryNodesDistribution/12"),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getHistoryNodesDistribution12 success:");
+            console.log(evt);
+            var zList = [];
+            for(var key in evt) {  
+                var zInfo = {"z":parseInt(evt[key]), "code":key};
+                zList.push(zInfo);
+            } 
+            updateMapPast12(zList, mapBgList);
+        },error: function(error){
+            console.log("php_getHistoryNodesDistribution12 error:"+error.msg);
+        }
+    });
+}
+
+//饼图-1
+function php_getBlockDistribution(){
+    $.ajax({
+        url: common.getPhpUrl("getWTCRichest/10"),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getBlockDistribution success:");
+            console.log(evt);
+            var zList = [];
+            var zColorList = ["#3abed5","#00ffda","#4b48d8","#f17fce","#3fcbca","#fdc928","#b88aff","#91a8ff","#426aff","#9755fe"];
+            for(var i=0; i<evt.WTCRichest.length; i++) { 
+                var zGet = evt.WTCRichest[i]; 
+                var zColor = zColorList[i%10];
+                if(zGet[0]=="others"){
+                    zColor = "#5d61d8";
+                }else if(zGet[0]=="0x33e44e3184941b57668d367a0dbcaf304a53b510"){
+                    continue;
+                }
+                var zInfo = {"name":zGet[0], "y":zGet[1], "color":zColor};
+                zList.push(zInfo);
+            } 
+            updateBalanceDistribution(zList);
+        },error: function(error){
+            console.log("php_getBlockDistribution error:"+error.msg);
+        }
+    });
+}
+
+//饼图-2
+function php_getMinerDistribution(){
+    $.ajax({
+        url: common.getPhpUrl("getWTCMinerDistribution/10"),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getMinerDistribution success:");
+            console.log(evt);
+            var zList = [];
+            var zColorList = ["#3abed5","#00ffda","#4b48d8","#f17fce","#3fcbca","#fdc928","#b88aff","#91a8ff","#426aff","#9755fe"];
+            var zCounter = 0;
+            for(var key in evt) {  
+                var zColor = zColorList[zCounter%10];
+                if(key=="others"){
+                    zColor = "#5d61d8";
+                }
+                var zInfo = {"name":key, "y":parseInt(evt[key]), "color":zColor};
+                zList.push(zInfo);
+                zCounter ++;
+            } 
+            updateMinerDistribution(zList);
+        },error: function(error){
+            console.log("php_getMinerDistribution error:"+error.msg);
+        }
+    });
+}
+
+//条图-1
+function php_getBlockTime(){
+    $.ajax({
+        url: common.getPhpUrl("getWTCInterBlockTime/50"),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getBlockTime success:");
+            console.log(evt);
+            var zListX = [];
+            var zListY = [];
+            evt = evt.reverse();
+            for(var i=0; i<evt.length; i++) { 
+                var zGet = evt[i]; 
+                zListX.push(zGet[0]);
+                zListY.push(zGet[1]);
+            } 
+            updateBlockTime(zListX, zListY.reverse());
+        },error: function(error){
+            console.log("php_getBlockTime error:"+error.msg);
+        }
+    });
+}
+
+//条图-2
+function php_getBlockDiff(){
+    $.ajax({
+        url: common.getPhpUrl("getWTCBlockDifficulty/50"),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getBlockDiff success:");
+            console.log(evt);
+            var zListX = [];
+            var zListY = [];
+            var zMin = 1000000000000;
+            evt = evt.reverse();
+            for(var i=0; i<evt.length; i++) { 
+                var zGet = evt[i]; 
+                zListX.push(zGet[0]);
+                if(zMin>zGet[1]){
+                    zMin = zGet[1];
+                }
+                zListY.push(zGet[1]);
+            } 
+            updateBlockDiff(zListX, zListY, zMin);
+        },error: function(error){
+            console.log("php_getBlockDiff error:"+error.msg);
+        }
+    });
+}
+
+
+</script>
+
+</body>
+</html>

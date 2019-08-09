@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WaltonChain</title> 
+    <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+    <link rel='icon' href='../img/icon.ico' type='image/x-ico' />
+    <script type="text/javascript" src="../../vendor/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.easing.1.3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/clipboard.js/1.5.12/clipboard.min.js"></script>
+</head>
+
+
+<body class="body_css" >
+    <!--主页面容器-->
+    <div id="id_main_page" class="main_page">
+        <div id="id_searchMiner_head" class="bg_base_a" style="position:absolute; top:870px; width:700px; height:315px;">
+            <img src="../img/addr_acount.jpg" style="position:absolute; left:0px; top:0px;">
+            <div id="id_searchMiner_head_addr" class="searchTran_txt_4 txt_copy btn_light_middle" style="left:135px; top:85px;" data-clipboard-action="copy" data-clipboard-target="#id_searchMiner_head_addr">0</div>
+            <div id="id_searchMiner_head_balance" class="searchMiner_txt_2" style="left:100px; top:232px;">0 WTC</div>
+            <div id="id_searchMiner_btn_copy_addr" class="adb btn_light_middle" style="left:100px; top:85px;" data-clipboard-action="copy" data-clipboard-target="#id_searchMiner_head_addr"><img src="../img/btn_copy.png"></div>
+        </div>
+        <div style="position:absolute; left:0px; top:1225px;">
+            <div id="id_searchMiner_btn_tran" class="searchMiner_btn textBtn" style="left:60px;">Account Transactions</div>
+            <div id="id_searchMiner_btn_block" class="searchMiner_btn textBtn" style="left:360px;">Mined Blocks</div>
+        </div>
+        <div style="position:absolute; left:0px; top:1325px;">
+            <div id="id_mask" class="" style="position:absolute; width:700px; height:300px;">
+                <div class="title_container">
+                    <div id="id_searchMiner_tran_title" class="title_blue" style="position:absolute; left:39px; top:30px;">Total Transaction: 0</div>
+                    <div id="id_select" style="position:absolute; left:640px; top:23px; z-index:2000;"></div>
+                </div>
+                <div id="id_searchMiner_tran_content" style="position:absolute; top:90px; width:700px; height:100%; overflow-x:scroll;"></div>
+                <div id="id_page" style="position:absolute; z-index:1000;"></div>
+            </div>
+        </div>
+        <input type="text" id="id_input_copy" style="position:absolute; width:700px; height:10px; height:1000px; opacity:0; z-index:-1;"/>
+    </div>
+
+    <div id="id_header"></div>
+    <div id="id_desc" style="position:absolute; top:272px;"></div>
+    <div id="id_footer"></div>
+    <div id="id_popupwin"></div>
+    <div id="id_tips"></div>
+    <div id="id_btnTop"></div>
+
+<script>
+/////////////////// 初始化基础配置相关 ///////////////////
+var zHead = document.getElementsByTagName('head')[0];
+var zScript = document.createElement('script');
+zScript.type = 'text/javascript';
+zScript.src = '../lib/mine/common.js?ver='+$.cookie('commonJsVer');
+zScript.onload = zScript.onreadystatechange = function() {
+    if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete" ){
+        common.init(['cp_headerB', 'cp_footerB', "cp_desc", "cp_select", "cp_page", "cp_tipsA", "cp_btn_top"]);
+    }
+}
+zHead.appendChild(zScript);
+var id_interval = 0;
+window.onload = function ready(){id_interval=setInterval(function(){if(common!=undefined && common.JS_IS_LOADED==true){clearInterval(id_interval); init();}}, 100);};
+/////////////////// 初始化基础配置相关 ///////////////////
+window.onresize = windowResize;
+
+var endHeight = 3290;
+var curMiner = 0;   //当前的bloc
+var selectTranOrBlock = 1; //1.tran 2.block
+var curPage = 1;
+var totalPage = 1;
+var perPage = 20;
+
+//初始化
+function init() {
+    parseParam();
+    common.init();
+
+    cp_headerB.init("id_header", 1);
+    cp_desc.init("id_desc");
+    cp_footerB.init("id_footer");
+    cp_footerB.updateTop(endHeight);
+    cp_select.init("id_select", [20, 30, 40, 50, 100], selectCallBackFun);
+    cp_btn_top.init("id_btnTop");
+    // curMiner = common.getCookie("searchMiner");
+    
+    $('#id_searchMiner_btn_tran').click({myType:"id_searchMiner_btn_tran"}, btnClickHandler);
+    $('#id_searchMiner_btn_block').click({myType:"id_searchMiner_btn_block"}, btnClickHandler);
+    $('#id_searchMiner_btn_copy_addr').click({myType:"id_searchMiner_btn_copy_addr"}, btnClickHandler);
+    $('#id_searchMiner_head_addr').click({myType:"id_searchMiner_head_addr"}, btnDblClickHandler);
+
+    changeSelect(1, 1);
+
+    windowResize();
+    
+    php_getBalance();
+
+    timerRun();
+    timerId = setInterval(timerRun, common.REFRESH_TIME);
+    // common.initTableMouseMove("id_searchMiner_tran_content");
+}
+
+function parseParam(){
+    var curWwwPath = window.document.location.href;
+    var start_pos = curWwwPath.indexOf("?");
+    var end_pos = curWwwPath.indexOf("&");
+    curMiner = curWwwPath.substring(start_pos+1, end_pos);
+
+    var isPc = curWwwPath.indexOf("/pc/")!=-1?true:false;
+    var zNewWWW = curWwwPath;
+    var zWidth = parseInt(window.screen.width);
+    if(zWidth > 750){
+        if(isPc==false){
+            zNewWWW = zNewWWW.replace("/mobile/", "/pc/");
+            common.gotoWebSite(zNewWWW);
+        }
+    }else{
+        if(isPc==true){
+            zNewWWW = zNewWWW.replace("/pc/", "/mobile/");
+            common.gotoWebSite(zNewWWW);
+        }
+    }
+}
+
+//窗口尺寸重置
+function windowResize()
+{
+    var zScale = common.initScale(1);
+    zScale = (zScale<1) ? 1 : zScale;
+
+    var zMyWidth = document.body.clientWidth;
+    var zObjWidth = parseInt($('#id_main_page').css("width"))*zScale;
+    
+    var zMiddleWidth = (zMyWidth-zObjWidth)/2/zScale;
+    $('#id_main_page').css({"left":zMiddleWidth+"px"});
+    cp_headerB.windowResize(zMiddleWidth);
+    cp_desc.windowResize(zMiddleWidth);
+    cp_footerB.windowResize(zMiddleWidth);
+    cp_footerB.updateTop(endHeight);
+}
+
+//按钮点击事件
+function btnClickHandler(p_obj_event){
+    var zInput = document.querySelector('#id_input_copy');
+    switch(p_obj_event.data.myType){
+        case "id_searchMiner_btn_tran":
+            changeSelect(1, 1);
+            break;
+        case "id_searchMiner_btn_block":
+            changeSelect(2, 1);
+            break;
+        case "id_searchMiner_btn_copy_addr":
+            var targetText=$("#id_searchMiner_head_addr").text();
+            targetText = common.trim(targetText);
+            var clipboard = new Clipboard('#id_searchMiner_btn_copy_addr');
+            clipboard.on('success', function(e) {
+                cp_tipsA.init('id_tips', 'id_searchMiner_btn_copy_addr', 'copy success');
+                e.clearSelection();
+            });
+            break;
+    }
+}
+
+//按钮双击事件
+function btnDblClickHandler(p_obj_event){
+    switch(p_obj_event.data.myType){
+        case "id_searchMiner_head_addr":
+            var targetText=$("#id_searchMiner_head_addr").text();
+            targetText = common.trim(targetText);
+            var clipboard = new Clipboard('#id_searchMiner_head_addr');
+            clipboard.on('success', function(e) {
+                cp_tipsA.init('id_tips', 'id_searchMiner_head_addr', 'copy success');
+                e.clearSelection();
+            });
+            break;
+    }
+}
+
+//改变选择标题
+function changeSelect(p_itn_select, p_int_page){
+    //更新标题
+    selectTranOrBlock = p_itn_select;
+    showBtn();
+    curPage = p_int_page;
+    if(selectTranOrBlock==1){
+        php_getTran();
+    }else{
+        php_getBlock();
+    }
+    cp_select.closeWin();
+    curPage = 1;
+    totalPage = 1;
+}
+
+//显示pre next按钮
+function showBtn(){
+    $('#id_searchMiner_btn_tran').removeClass('searchMiner_btn_selected').removeClass('searchMiner_btn_out');
+    $('#id_searchMiner_btn_block').removeClass('searchMiner_btn_selected').removeClass('searchMiner_btn_out');
+    if(selectTranOrBlock==1){
+        $('#id_searchMiner_btn_tran').addClass('searchMiner_btn_selected');
+        $('#id_searchMiner_btn_block').addClass('searchMiner_btn_out');
+    }else{
+        $('#id_searchMiner_btn_tran').addClass('searchMiner_btn_out');
+        $('#id_searchMiner_btn_block').addClass('searchMiner_btn_selected');
+    }
+}
+
+//cp_select的回调函数
+function selectCallBackFun(p_str_value){
+    perPage = parseInt(p_str_value);
+    changeSelect(selectTranOrBlock, 1);
+}
+
+//cp_page的回调函数
+function pageCallBackFun(p_int_value){
+    curPage = parseInt(p_int_value);
+    changeSelect(selectTranOrBlock, curPage);
+}
+
+//更新消息
+function updateBalanceInfo(p_info){
+    $('#id_searchMiner_head_addr').text(p_info["Address"]);
+    $('#id_searchMiner_head_balance').text(p_info["Balance"]+" WTC");
+
+}
+
+//更新tran信息
+function updateTran(p_info){
+    $('#id_searchMiner_tran_title').text("Total Transaction: "+ p_info["total_records"]);
+
+    curPage = parseInt(p_info["current_page"]);
+    totalPage = parseInt(p_info["total_page"]);
+    console.log(curPage,totalPage);
+    if(curPage==1){
+        console.log("1=========");
+        cp_page.init("id_page", curPage, totalPage, pageCallBackFun);
+        // cp_page.init("id_page", 1, 100, pageCallBackFun);
+    }else{
+        console.log("2=========");
+        cp_page.updatePage(curPage);
+    }
+
+    var zList = p_info["tx_pagination_details"];
+    updateTranList(zList);
+}
+
+//更新Block表
+function updateTranList(p_list){
+    if(!p_list){
+        console.log("searchMiner.updateTranList() 更新失败, p_list。");
+        return;
+    }
+
+    //头
+    var zTopTotal = 0;
+    var zHtmlCode = "";
+    $("#id_searchMiner_tran_content").html(zHtmlCode);
+    zHtmlCode += '\
+                <div class="bg_85_a xLine_700_85" style="height:85px !important;">\
+                    <div class="txtTableHead" style="width:160px; left:0px;">Block Number</div>\
+                    <div class="txtTableHead" style="width:260px; left:160px;">From</div>\
+                    <div class="txtTableHead" style="width:260px; left:420px;">To</div>\
+                    <div class="txtTableHead" style="width:260px; left:680px;">Tx Hash</div>\
+                    <div class="txtTableHead" style="width:130px; left:940px;">In/Out</div>\
+                    <div class="txtTableHead" style="width:130px; left:1070px;">Amount</div>\
+                </div>\
+                ';
+    //内容
+    if(p_list.length==0){
+        zTopTotal = 85;
+        zHtmlCode +=    '<div class="bg_85_b xLine_700_85" style="top:'+zTopTotal+'px;">\
+                            <div class="txtTableContent_white" style="width:700px; left:0px;">No Data</div>\
+                        </div>';
+        zTopTotal += 85;
+    }else{
+        for(var i=0; i<p_list.length; i++){
+            var zInfo = p_list[i];
+            zTopTotal = i*85 + 85;
+            var zBgClass = "bg_85_b";
+            var zBlockNumber = zInfo["blockNumber"];
+            var zHash = zInfo["tx_hash"];
+            var zSender = zInfo["addressFrom"];
+            var zReceiver = zInfo["addressTo"];
+            var zAmout = zInfo["value"];
+            var zInOut = (curMiner==zSender) ? "Out" : "In";
+            if(i%2==1){
+                zBgClass = "bg_85_a";
+            }
+            var zLineClassX = "";
+            if(i==p_list.length-1){
+                zLineClassX = "xLine_700_85";
+            }
+            zHtmlCode += '\
+                    <div class="'+zBgClass+' '+zLineClassX+'" style="top:'+zTopTotal+'px;">\
+                        <div class="txtTableContent_white" style="width:140px; left:20px; text-align:left !important;">'+zBlockNumber+'</div>\
+                        <div id="id_searchMiner_table_txt2_'+i+'" class="txtTableContent_blue textBtn" style="width:240px; left:180px;" onclick="onTranSenderClickHandle('+i+')">'+zSender+'</div>\
+                        <div id="id_searchMiner_table_txt3_'+i+'" class="txtTableContent_blue textBtn" style="width:240px; left:440px;" onclick="onTranRecieverClickHandle('+i+')">'+zReceiver+'</div>\
+                        <div id="id_searchMiner_table_txt1_'+i+'" class="txtTableContent_blue textBtn" style="width:240px; left:700px;" onclick="onTranHashClickHandle('+i+')">'+zHash+'</div>\
+                        <div class="txtTableContent_white" style="width:130px; left:940px;">'+zInOut+'</div>\
+                        <div class="txtTableContent_white" style="width:100px; left:1070px; text-align:right !important;">'+zAmout+'</div>\
+                    </div>\
+                    ';
+        }
+        
+        zTopTotal += 85;
+        zHtmlCode += '<div class="bg_140" style="top:'+zTopTotal+'px;"></div>';
+    }
+    $("#id_searchMiner_tran_content").html(zHtmlCode);
+    
+    //更新翻页按钮位置
+    var zPageTop = zTopTotal + 90 + 30;
+    $("#id_page").css({"top":zPageTop+"px", "left":"215px"});
+    
+    //更新底部栏
+    endHeight = 1525 + zTopTotal + 140 + 100;
+    cp_footerB.updateTop(endHeight);
+
+    var zMaskHeight = zTopTotal + 200;
+    $('#id_mask').css({"height":zMaskHeight+"px"});
+}
+
+//更新block信息
+function updateBlock(p_info){
+    $('#id_searchMiner_tran_title').text("Total Mined Block Count: "+p_info["total_records"]);
+
+    curPage = parseInt(p_info["current_page"]);
+    totalPage = parseInt(p_info["total_page"]);
+    if(curPage==1){
+        cp_page.init("id_page", curPage, totalPage, pageCallBackFun);
+        // cp_page.init("id_page", 1, 100, pageCallBackFun);
+    }else{
+        cp_page.updatePage(curPage);
+    }
+
+    var zList = p_info["tx_pagination_details"];
+    updateBlockList(zList);
+}
+
+//更新Block表
+function updateBlockList(p_list){
+    if(!p_list){
+        console.log("searchMiner.updateBlockList() 更新失败, p_list。");
+        return;
+    }
+
+    //头
+    var zTopTotal = 0;
+    var zHtmlCode = "";
+    $("#id_searchMiner_tran_content").html(zHtmlCode);
+    zHtmlCode += '\
+                <div class="bg_85_a xLine_700_85" style="height:85px !important;">\
+                    <div class="txtTableHead" style="width:130px; left:0px;">Block Number</div>\
+                    <div class="txtTableHead" style="width:260px; left:130px;">Block Hash</div>\
+                    <div class="txtTableHead" style="width:130px; left:390px;">Mining Reward</div>\
+                    <div class="txtTableHead" style="width:130px; left:520px;">Tran Reward</div>\
+                    <div class="txtTableHead" style="width:160px; left:650px;">Difficulty</div>\
+                    <div class="txtTableHead" style="width:160px; left:810px;">Nonce</div>\
+                    <div class="txtTableHead" style="width:100px; left:970px;">Size</div>\
+                    <div class="txtTableHead" style="width:130px; left:1070px;">Tran count</div>\
+                </div>\
+                ';
+    //内容
+    if(p_list.length==0){
+        zTopTotal = 85;
+        zHtmlCode +=    '<div class="bg_85_b xLine_700_85" style="top:'+zTopTotal+'px;">\
+                            <div class="txtTableContent_white" style="width:700px; left:0px;">No Data</div>\
+                        </div>';
+        zTopTotal += 85;
+    }else{
+        for(var i=0; i<p_list.length; i++){
+            var zInfo = p_list[i];
+            zTopTotal = i*85 + 85;
+            var zBgClass = "bg_85_b";
+            var zBlockNumber = zInfo["blockNumer"];
+            var zHash = zInfo["blockHash"];
+            var zMReward = zInfo["mining_reward"];
+            var zTReward = zInfo["transaction_reward"];
+            var zDiff = zInfo["difficulty"];
+            var zNonce = zInfo["nonce"];
+            var zSize = zInfo["size"];
+            var zTCount = zInfo["transactionCount"];
+
+            if(i%2==1){
+                zBgClass = "bg_85_a";
+            }
+            var zLineClassX = "";
+            if(i==p_list.length-1){
+                zLineClassX = "xLine_700_85";
+            }
+            zHtmlCode += '\
+                    <div class="'+zBgClass+' '+zLineClassX+'" style="top:'+zTopTotal+'px;">\
+                        <div id="id_searchMiner_table_txt4_'+i+'"  class="txtTableContent_blue textBtn" style="width:130px; left:20px; text-align:left !important;" onclick="onBlockBlockClickHandle('+i+')">'+zBlockNumber+'</div>\
+                        <div class="txtTableContent_white txtDot" style="width:240px; left:150px;">'+zHash+'</div>\
+                        <div class="txtTableContent_white txtDot" style="width:130px; left:390px;">'+zMReward+'</div>\
+                        <div class="txtTableContent_white" style="width:130px; left:520px;">'+zTReward+'</div>\
+                        <div class="txtTableContent_white txtDot" style="width:160px; left:650px;">'+zDiff+'</div>\
+                        <div class="txtTableContent_white txtDot" style="width:160px; left:810px;">'+zNonce+'</div>\
+                        <div class="txtTableContent_white" style="width:100px; left:970px;">'+zSize+'</div>\
+                        <div class="txtTableContent_white" style="width:100px; left:1070px; text-align:right !important;">'+zTCount+'</div>\
+                    </div>\
+                    ';
+        }
+        zTopTotal += 85;
+        zHtmlCode += '<div class="bg_140" style="top:'+zTopTotal+'px;"></div>';
+    }
+    $("#id_searchMiner_tran_content").html(zHtmlCode);
+
+    //更新翻页按钮位置
+    var zPageTop = zTopTotal + 100;
+    $("#id_page").css({"top":zPageTop+"px", "left":"215px"});
+    
+    //更新底部栏
+    endHeight = 1300 + zTopTotal + 140 + 100;
+    cp_footerB.updateTop(endHeight);
+
+    var zMaskHeight = zTopTotal + 200;
+    $('#id_mask').css({"height":zMaskHeight+"px"});
+}
+
+
+
+//Tran-Hash被点击
+function onTranHashClickHandle(p_int_index){
+    var zSearchValue = $('#id_searchMiner_table_txt1_'+p_int_index).text();
+    cp_headerB.goToSearch(3, zSearchValue);
+}
+
+//Tran-Sender被点击
+function onTranSenderClickHandle(p_int_index){
+    var zSearchValue = $('#id_searchMiner_table_txt2_'+p_int_index).text();
+    cp_headerB.goToSearch(2, zSearchValue);
+}
+
+//Tran-Reciever被点击
+function onTranRecieverClickHandle(p_int_index){
+    var zSearchValue = $('#id_searchMiner_table_txt3_'+p_int_index).text();
+    cp_headerB.goToSearch(2, zSearchValue);
+}
+
+//Block-Block被点击
+function onBlockBlockClickHandle(p_int_index){
+    var zSearchValue = $('#id_searchMiner_table_txt4_'+p_int_index).text();
+    cp_headerB.goToSearch(1, zSearchValue);
+}
+
+
+
+//定时运行(1分钟)
+function timerRun(){
+    cp_desc.updateDescInfo();
+}
+
+//////////////////////////////////// php相关 ////////////////////////////////////
+function php_getBalance(){
+    $.ajax({
+        url: common.getPhpUrl("getBalance/"+curMiner),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getBalance success:");
+            console.log(evt);
+            if(evt){
+                updateBalanceInfo(evt);
+            }else{
+                console.log("php_getBalance block_details内容为空。");
+            }
+        },error: function(error){
+            console.log("php_getBalance error:"+error.msg);
+        }
+    });
+}
+
+function php_getTran(){
+    $.ajax({
+        url: common.getPhpUrl("getAccountTransactionsAllPagination/"+curMiner+"/"+curPage+"/"+perPage),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getTran success:");
+            console.log(evt);
+            if(evt){
+                updateTran(evt);
+            }else{
+                console.log("php_getTran block_details内容为空。");
+            }
+        },error: function(error){
+            console.log("php_getTran error:"+error.msg);
+        }
+    });
+}
+
+function php_getBlock(){
+    // curMiner = "0x1badd02aa05ad9d6f3b77233a42ae4b2eb61b323";
+    $.ajax({
+        url: common.getPhpUrl("getMinedBlocksPagination/"+curMiner+"/"+curPage+"/"+perPage),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getBlock success:");
+            console.log(evt);
+            if(evt){
+                updateBlock(evt);
+            }else{
+                console.log("php_getBlock block_details内容为空。");
+            }
+        },error: function(error){
+            console.log("php_getBlock error:"+error.msg);
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>

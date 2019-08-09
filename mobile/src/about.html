@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>WaltonChain</title> 
+    <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+    <link rel='icon' href='../img/icon.ico' type='image/x-ico' />
+    <link rel="stylesheet" href="../../vendor/videojs/video-js.css">
+    <script type="text/javascript" src="../../vendor/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../vendor/videojs/video.min.js"></script>
+</head>
+
+
+<body class="body_css">
+    <!--主页面容器-->
+    <div id="id_main_page" class="main_page">
+        <div style="position:absolute; top:750px;">
+            <div style="position:absolute; width:700px; color:#fff; font-size:28px;">Waltonchain is a blockchain + loT (VloT) ecosystem</div>
+            <div style="position:absolute; left:0px; top:50px;">
+                <video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" width="700" height="400" poster="../img/videoPage.jpg" data-setup="{}">
+                    <source src="https://www.waltonchain.org/templets/default/v/wtc_cn.mp4" type="video/mp4">
+                    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                </video>
+            </div>
+
+            <div style="position:absolute; top:500px; width:700px; color:#fff; font-size:28px;">Core advantages of Waltonchain</div>
+            <img style="position:absolute; top:550px;" src="../img/about_1.jpg">
+
+            <div style="position:absolute; top:900px; width:700px; color:#fff; font-size:28px;">Project Planning</div>
+            <img style="position:absolute; top:950px;" src="../img/about_2.jpg">
+
+            <div style="position:absolute; top:3130px; width:700px; color:#fff; font-size:28px;">Team</div>
+            <img style="position:absolute; top:3180px;" src="../img/about_3.jpg">
+
+            <div style="position:absolute; top:4540px; width:700px; color:#fff; font-size:28px;">Partners</div>
+            <img style="position:absolute; top:4590px;" src="../img/about_4.jpg">
+        </div>
+    </div>
+
+    <div id="id_header"></div>
+    <div id="id_desc" style="position:absolute; top:131px;"></div>
+    <div id="id_footer"></div>
+    <div id="id_popupwin"></div>
+    <div id="id_tips"></div>
+    <div id="id_btnTop"></div>
+    
+<script>
+/////////////////// 初始化基础配置相关 ///////////////////
+var zHead = document.getElementsByTagName('head')[0];
+var zScript = document.createElement('script');
+zScript.type = 'text/javascript';
+zScript.src = '../lib/mine/common.js?ver='+$.cookie('commonJsVer');
+zScript.onload = zScript.onreadystatechange = function() {
+    if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete" ){
+        common.init(['cp_headerB', 'cp_footerB', "cp_desc", "cp_btn_top"]);
+    }
+}
+zHead.appendChild(zScript);
+var id_interval = 0;
+window.onload = function ready(){id_interval=setInterval(function(){if(common!=undefined && common.JS_IS_LOADED==true){clearInterval(id_interval); init();}}, 100);};
+/////////////////// 初始化基础配置相关 ///////////////////
+window.onresize = windowResize;
+
+var endHeight = 5750;
+
+//初始化
+function init() {
+    common.init();
+    cp_headerB.init("id_header", 5);
+    cp_desc.init("id_desc");
+    cp_footerB.init("id_footer");
+    cp_footerB.updateTop(endHeight);
+    cp_btn_top.init("id_btnTop");
+    $('#id_about_btn_more').click({myType:"id_about_btn_more"}, btnClickHandler);
+
+    windowResize();
+
+    timerRun();
+    timerId = setInterval(timerRun, common.REFRESH_TIME);
+    $('#id_main_page').show();
+}
+
+//窗口尺寸重置
+function windowResize()
+{
+    var zScale = common.initScale(1);
+    zScale = (zScale<1) ? 1 : zScale;
+
+    var zMyWidth = document.body.clientWidth;
+    var zObjWidth = parseInt($('#id_main_page').css("width"))*zScale;
+    
+    var zMiddleWidth = (zMyWidth-zObjWidth)/2/zScale;
+    $('#id_main_page').css({"left":zMiddleWidth+"px"});
+    cp_headerB.windowResize(zMiddleWidth);
+    cp_desc.windowResize(zMiddleWidth);
+    cp_footerB.windowResize(zMiddleWidth);
+    cp_footerB.updateTop(endHeight);
+}
+
+//按钮点击事件
+function btnClickHandler(p_obj_event){
+    switch(p_obj_event.data.myType){
+        case "id_about_btn_more":
+            common.gotoWebSite('https://www.waltonchain.org/');
+            break;
+    }
+}
+
+
+//定时运行(1分钟)
+function timerRun(){
+    cp_desc.updateDescInfo();
+}
+
+
+//////////////////////////////////// php相关 ////////////////////////////////////
+
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WaltonChain</title> 
+    <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+    <link rel='icon' href='../img/icon.ico' type='image/x-ico' />
+    <script type="text/javascript" src="../../vendor/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.easing.1.3.min.js"></script>
+    <script type="text/javascript" src="../../vendor/clipboard.min.js"></script>
+</head>
+
+
+<body class="body_css">
+    <!--主页面容器-->
+    <div id="id_main_page" class="main_page" >
+        <div style="position:absolute; left:0px; top:730px;">
+            <div id="id_mn_btn_mn" class="searchMiner_btn textBtn" style="left:60px;">M N</div>
+            <div id="id_mn_btn_gmn" class="searchMiner_btn textBtn" style="left:360px;">G M N</div>
+        </div>
+        <div style="position:absolute; left:0px; top:830px;">
+            <div id="id_mask" class="tb_mask" style="position:absolute; width:700px; height:300px;">
+                <div class="title_container">
+                    <div id="id_mn_tran_title" class="title_blue" style="position:absolute; left:39px; top:30px;">Master Node List (0 records found)</div>
+                    <div id="id_mn_loading" style="position:absolute; top:120px; color:#aaa; font-size:30px; width:700px; text-align:center;">Loading . . .</div>
+                    <div id="id_select" style="position:absolute; left:640px; top:23px; z-index:1000;"></div>
+                </div>
+                <div id="id_mn_tran_content" style="position:absolute; top:90px; width:700px; height:100%; overflow-x:scroll;"></div>
+                <div id="id_page" style="position:absolute; z-index:1000;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="id_header"></div>
+    <div id="id_desc" style="position:absolute; top:131px;"></div>
+    <div id="id_footer"></div>
+    <div id="id_popupwin"></div>
+    <div id="id_tips"></div>
+    <div id="id_btnTop"></div>
+
+<script>
+/////////////////// 初始化基础配置相关 ///////////////////
+var zHead = document.getElementsByTagName('head')[0];
+var zScript = document.createElement('script');
+zScript.type = 'text/javascript';
+zScript.src = '../lib/mine/common.js?ver='+$.cookie('commonJsVer');
+zScript.onload = zScript.onreadystatechange = function() {
+    if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete" ){
+        common.init(['cp_headerB', 'cp_footerB', "cp_desc", "cp_select", "cp_page", "cp_btn_top"]);
+    }
+}
+zHead.appendChild(zScript);
+var id_interval = 0;
+window.onload = function ready(){id_interval=setInterval(function(){if(common!=undefined && common.JS_IS_LOADED==true){clearInterval(id_interval); init();}}, 100);};
+/////////////////// 初始化基础配置相关 ///////////////////
+window.onresize = windowResize;
+
+var endHeight = 1290;
+var selectMnOrGmn = 1; //1.mn 2.gmn
+var curPage = 1;
+var totalPage = 1;
+var perPage = 20;
+var mnList = [];
+var gmnList = [];
+
+//初始化
+function init() {
+    common.init();
+
+    cp_headerB.init("id_header", 3);
+    cp_desc.init("id_desc");
+    cp_footerB.init("id_footer");
+    cp_footerB.updateTop(endHeight);
+    cp_select.init("id_select", [20, 30, 40, 50, 100], selectCallBackFun);
+    cp_btn_top.init("id_btnTop");
+    $('#id_mn_btn_mn').click({myType:"id_mn_btn_mn"}, btnClickHandler);
+    $('#id_mn_btn_gmn').click({myType:"id_mn_btn_gmn"}, btnClickHandler);
+
+    changeSelect(1, 1, true);
+
+    windowResize();
+
+    timerRun();
+    timerId = setInterval(timerRun, common.REFRESH_TIME);
+    $('#id_main_page').show();
+    // common.initTableMouseMove("id_mn_tran_content");
+}
+
+//窗口尺寸重置
+function windowResize()
+{
+    var zScale = common.initScale(1);
+    zScale = (zScale<1) ? 1 : zScale;
+
+    var zMyWidth = document.body.clientWidth;
+    var zObjWidth = parseInt($('#id_main_page').css("width"))*zScale;
+    
+    var zMiddleWidth = (zMyWidth-zObjWidth)/2/zScale;
+    $('#id_main_page').css({"left":zMiddleWidth+"px"});
+    cp_headerB.windowResize(zMiddleWidth);
+    cp_desc.windowResize(zMiddleWidth);
+    cp_footerB.windowResize(zMiddleWidth);
+    cp_footerB.updateTop(endHeight);
+}
+
+//按钮点击事件
+function btnClickHandler(p_obj_event){
+    switch(p_obj_event.data.myType){
+        case "id_mn_btn_mn":
+            $("#id_mn_tran_content").html("");
+            changeSelect(1, 1, true);
+            break;
+        case "id_mn_btn_gmn":
+            $("#id_mn_tran_content").html("");
+            changeSelect(2, 1, true);
+            break;
+    }
+}
+
+//改变选择标题
+function changeSelect(p_itn_select, p_int_page, p_bool_isFreshPage){
+    //更新标题
+    selectMnOrGmn = p_itn_select;
+    showBtn();
+    curPage = p_int_page;
+    if(selectMnOrGmn==1){
+        if(p_bool_isFreshPage==true){
+            php_getMn();
+        }else{
+            updateMn();
+        }
+    }else{
+        if(p_bool_isFreshPage==true){
+            php_getGmn();
+        }else{
+            updateGmn();
+        }
+    }
+    cp_select.closeWin();
+    curPage = 1;
+    totalPage = 1;
+}
+
+//显示pre next按钮
+function showBtn(){
+    $('#id_mn_btn_mn').removeClass('mn_btn_selected').removeClass('mn_btn_out');
+    $('#id_mn_btn_gmn').removeClass('mn_btn_selected').removeClass('mn_btn_out');
+    if(selectMnOrGmn==1){
+        $('#id_mn_btn_mn').addClass('mn_btn_selected');
+        $('#id_mn_btn_gmn').addClass('mn_btn_out');
+    }else{
+        $('#id_mn_btn_mn').addClass('mn_btn_out');
+        $('#id_mn_btn_gmn').addClass('mn_btn_selected');
+    }
+}
+
+//cp_select的回调函数
+function selectCallBackFun(p_str_value){
+    perPage = parseInt(p_str_value);
+    changeSelect(selectMnOrGmn, 1, false);
+}
+
+//cp_page的回调函数
+function pageCallBackFun(p_int_value){
+    curPage = parseInt(p_int_value);
+    changeSelect(selectMnOrGmn, curPage, false);
+}
+
+//更新消息
+function updateBalanceInfo(p_info){
+    $('#id_mn_head_addr').text(p_info["Address"]);
+    $('#id_mn_head_balance').text(p_info["Balance"]+" WTC");
+
+}
+
+//更新MN信息
+function updateMn(){
+    $('#id_mn_tran_title').text("Master Node List ("+mnList.length+" records found)");
+
+    totalPage = Math.ceil(mnList.length/perPage);
+    if(curPage==1){
+        cp_page.init("id_page", curPage, totalPage, pageCallBackFun);
+    }else{
+        cp_page.updatePage(curPage);
+    }
+
+    var zBeginIndex = (curPage-1)*perPage;
+    var zEndIndex = zBeginIndex + perPage;
+    var zNewList = mnList.slice(zBeginIndex, zEndIndex);
+    updateMnList(zNewList, zBeginIndex+1);
+}
+
+//更新Block表
+function updateMnList(p_list, p_beginIndex){
+    if(!p_list){
+        console.log("mn.updateMnList() 更新失败, p_list为空。");
+        return;
+    }
+
+    //头
+    var zTopTotal = 0;
+    var zHtmlCode = "";
+    $("#id_mn_tran_content").html(zHtmlCode);
+    zHtmlCode += '\
+                <div class="bg_85_a xLine_700_85" style="height:70px !important;">\
+                    <div class="txtTableHead" style="width:150px; left:0px;">ID</div>\
+                    <div class="txtTableHead" style="width:500px; left:150px;">Address</div>\
+                    <div class="txtTableHead" style="width:300px; left:650px;">Last Tx Block</div>\
+                    <div class="txtTableHead" style="width:250px; left:950px;">Balance</div>\
+                </div>\
+                ';
+    //内容
+    if(p_list.length==0){
+        zTopTotal = 85;
+        zHtmlCode +=    '<div class="bg_85_b xLine_700_85" style="top:'+zTopTotal+'px;">\
+                            <div class="txtTableContent_white" style="width:700px; left:0px;">No Data</div>\
+                        </div>';
+        zTopTotal += 85;
+    }else{
+        for(var i=0; i<p_list.length; i++){
+            var zInfo = p_list[i];
+            zTopTotal = i*85 + 85;
+            var zBgClass = "bg_85_b";
+            var zAddr = zInfo["account"];
+            var zBlock = zInfo["block"];
+            var zBalance = zInfo["balance"];
+
+            if(i%2==1){
+                zBgClass = "bg_85_a";
+            }
+            var zLineClassX = "";
+            if(i==p_list.length-1){
+                zLineClassX = "xLine_700_85";
+            }
+            zHtmlCode += '\
+                    <div class="'+zBgClass+' '+zLineClassX+'" style="top:'+zTopTotal+'px;">\
+                        <div class="txtTableContent_white" style="width:150px; left:0px;">'+(p_beginIndex+i)+'</div>\
+                        <div class="txtTableContent_white" style="width:500px; left:150px;">'+zAddr+'</div>\
+                        <div class="txtTableContent_white" style="width:300px; left:650px;">'+zBlock+'</div>\
+                        <div class="txtTableContent_white" style="width:250px; left:930px; text-align:right !important;">'+zBalance+'</div>\
+                    </div>\
+                    ';
+        }
+        zTopTotal += 85;
+        zHtmlCode += '<div class="bg_140" style="top:'+zTopTotal+'px;"></div>';
+    }
+    $("#id_mn_tran_content").html(zHtmlCode);
+
+    //更新翻页按钮位置
+    var zPageTop = zTopTotal + 90 + 30;
+    $("#id_page").css({"top":zPageTop+"px", "left":"215px"});
+    
+    //更新底部栏
+    endHeight = 850 + zTopTotal + 140 + 100;
+    cp_footerB.updateTop(endHeight);
+
+    var zMaskHeight = zPageTop + 200;
+    $('#id_mask').css({"height":zMaskHeight+"px"});
+}
+
+//更新block信息
+function updateGmn(){
+    $('#id_mn_tran_title').text("Guardian Master Node List ("+gmnList.length+" records found)");
+
+    totalPage = Math.ceil(gmnList.length/perPage);
+    if(curPage==1){
+        cp_page.init("id_page", curPage, totalPage, pageCallBackFun);
+    }else{
+        cp_page.updatePage(curPage);
+    }
+
+    var zBeginIndex = (curPage-1)*perPage;
+    var zEndIndex = zBeginIndex + perPage;
+    var zNewList = gmnList.slice(zBeginIndex, zEndIndex);
+    updateGmnList(zNewList, zBeginIndex+1);
+}
+
+//更新Block表
+function updateGmnList(p_list, p_beginIndex){
+    if(!p_list){
+        console.log("mn.updateMnList() 更新失败, p_list为空。");
+        return;
+    }
+
+    //头
+    var zTopTotal = 0;
+    var zHtmlCode = "";
+    $("#id_mn_tran_content").html(zHtmlCode);
+    zHtmlCode += '\
+                <div class="bg_85_a xLine_700_85" style="height:70px !important;">\
+                    <div class="txtTableHead" style="width:200px; left:0px;">ID</div>\
+                    <div class="txtTableHead" style="width:500px; left:200px;">Address</div>\
+                    <div class="txtTableHead" style="width:500px; left:200px;"></div>\
+                </div>\
+                ';
+    //内容
+    if(p_list.length==0){
+        zTopTotal = 85;
+        zHtmlCode +=    '<div class="bg_85_b xLine_700_85" style="top:'+zTopTotal+'px;">\
+                            <div class="txtTableContent_white" style="width:700px; left:0px;">No Data</div>\
+                        </div>';
+        zTopTotal += 85;
+    }else{
+        for(var i=0; i<p_list.length; i++){
+            var zInfo = p_list[i];
+            zTopTotal = i*85 + 85;
+            var zBgClass = "bg_85_b";
+            var zAddr = zInfo;
+
+            if(i%2==1){
+                zBgClass = "bg_85_a";
+            }
+            var zLineClassX = "";
+            if(i==p_list.length-1){
+                zLineClassX = "xLine_700_85";
+            }
+            zHtmlCode += '\
+                    <div class="'+zBgClass+' '+zLineClassX+'" style="top:'+zTopTotal+'px;">\
+                        <div class="txtTableContent_white" style="width:200px; left:0px;">'+(p_beginIndex+i)+'</div>\
+                        <div class="txtTableContent_white txtDot" style="width:480px; left:210px;">'+zAddr+'</div>\
+                    </div>\
+                    ';
+        }
+        zTopTotal += 85;
+        zHtmlCode += '<div class="bg_140" style="top:'+zTopTotal+'px;"></div>';
+    }
+    $("#id_mn_tran_content").html(zHtmlCode);
+
+    //更新翻页按钮位置
+    var zPageTop = zTopTotal + 90 + 30;
+    $("#id_page").css({"top":zPageTop+"px", "left":"215px"});
+    
+    //更新底部栏
+    endHeight = 850 + zTopTotal + 140 + 100;
+    cp_footerB.updateTop(endHeight);
+
+    var zMaskHeight = zPageTop + 200;
+    $('#id_mask').css({"height":zMaskHeight+"px"});
+}
+
+//定时运行(1分钟)
+function timerRun(){
+    cp_desc.updateDescInfo();
+}
+
+//////////////////////////////////// php相关 ////////////////////////////////////
+function php_getMn(){
+    $.ajax({
+        url: common.getPhpUrl("getMNList/5000"),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getMn success:");
+            console.log(evt);
+            if(evt){
+                // evt.end_block;
+                if(selectMnOrGmn==1){
+                    mnList = evt.MNList;
+                    updateMn(); 
+                }
+            }else{
+                console.log("php_getMn evt内容为空。");
+            }
+        },error: function(error){
+            console.log("php_getMn error:"+error.msg);
+        }
+    });
+}
+
+function php_getGmn(){
+    $.ajax({
+        url: common.getPhpUrl("getGMNList/4705281/5000"),
+        type: "get",
+        data:{},
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (evt) {
+            console.log("php_getGmn success:");
+            // console.log(evt);
+            if(evt){
+                if(selectMnOrGmn==2){
+                    gmnList = evt;
+                    updateGmn();
+                }
+            }else{
+                console.log("php_getGmn evt内容为空。");
+            }
+        },error: function(error){
+            console.log("php_getGmn error:"+error.msg);
+        }
+    });
+}
+
+
+
+
+</script>
+
+</body>
+</html>

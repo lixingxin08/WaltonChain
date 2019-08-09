@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>WaltonChain</title> 
+    <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+    <link rel='icon' href='../img/icon.ico' type='image/x-ico' />
+    <script type="text/javascript" src="../../vendor/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.cookie.js"></script>
+</head>
+
+
+<body class="body_css">
+    <!--主页面容器-->
+    <div id="id_main_page" class="main_page">
+        <div style="position:absolute; top:730px;">
+            <div id="id_dl_btn_0_1" class="dl_btn_1" style="left:0px;">Explorer</div>
+            <div id="id_dl_btn_0_2" class="dl_btn_1" style="left:175px;">Wallet</div>
+            <div id="id_dl_btn_0_3" class="dl_btn_1" style="left:350px;">Mining</div>
+            <div id="id_dl_btn_0_4" class="dl_btn_1" style="left:525px;">White Paper</div>
+            <div id="id_dl_title_line" style="position:absolute; top:66px;  width:175px; height:4px; background-color:#00eac8; z-index:100; transition:all .6s;"></div>
+            <div style="position:absolute; top:70px;  width:700px; height:2px; background-color:#2a3044; z-index:100;"></div>
+            <div id="id_dl_content_1" class="dl_bg" style="height:500px;">
+                <div class="dl_txt_1">Blockchain Explorer</div>
+                <div id="id_dl_btn_1_1" class="dl_btn_2 btn_light_small" style="left:50px; top:160px;">Explor User Manual</div>
+            </div>
+            <div id="id_dl_content_2" class="dl_bg" style="height:1200px;">
+                <div style="position:absolute; top:70px;">
+                    <div id="id_dl_btn_2_0_1" class="dl_btn_3 textBtn" style="left:60px;">PC</div>
+                    <div id="id_dl_btn_2_0_2" class="dl_btn_3 textBtn" style="left:370px;">Android</div>
+                    <div id="id_dl_content_2_1" style="position:absolute; top:140px;">
+                        <img src="../img/download_2_1.jpg" style="position:absolute; left:0px; top:0px;">
+                        <div id="id_dl_btn_2_1_3" class="dl_btn_4" style="left:50px; top:500px;">Wallet Design Concept</div>
+                        <div id="id_dl_btn_2_1_4" class="dl_btn_4" style="left:50px; top:610px;">Waltonchain Windows Wallet User Manual</div>
+                        <div id="id_dl_btn_2_1_5" class="dl_btn_4" style="left:50px; top:720px;">Full Node Wallet Video</div>
+                        <div id="id_dl_btn_2_1_6" class="dl_btn_4" style="left:50px; top:830px;">Waltonchain Mainet Launch Video</div>
+                    </div>
+                    <div id="id_dl_content_2_2" style="position:absolute; top:160px; display:none;">
+                        <img src="../img/download_2_2.jpg" style="position:absolute; left:0px; top:0px;">
+                        <div id="id_dl_btn_2_2_1" class="dl_btn_2 btn_light_small" style="left:50px; top:440px;">GitHub</div>
+                        <div id="id_dl_btn_2_2_2" class="dl_btn_2 btn_light_small" style="left:50px; top:550px;">Google Play</div>
+                        <div id="id_dl_btn_2_2_3" class="dl_btn_4" style="left:50px; top:660px;">User Manual</div>
+                        <div id="id_dl_btn_2_2_4" class="dl_btn_4" style="left:50px; top:770px;">Video Instructions</div>
+                    </div>
+                </div>
+            </div>
+            <div id="id_dl_content_3" class="dl_bg" style="height:500px; display:none;">
+                <div class="dl_txt_1">Blockchain Explorer</div>
+                <div id="id_dl_btn_3_1" class="dl_btn_2 btn_light_small" style="left:50px; top:170px;">GPU Miner</div>
+                <div id="id_dl_btn_3_2" class="dl_btn_2 btn_light_small" style="left:50px; top:280px;">GPU Mining Instructions</div>
+            </div>
+            <div id="id_dl_content_4" class="dl_bg" style="height:1520px; display:none;">
+                <div id="id_dl_btn_4_1" class="goOutBtn" style="position:absolute; left:5px; top:5px;" ><img src="../img/download_4_1.jpg"></div>
+                <div id="id_dl_btn_4_2" class="goOutBtn" style="position:absolute; left:5px; top:385px;" ><img src="../img/download_4_2.jpg"></div>
+                <div id="id_dl_btn_4_3" class="goOutBtn" style="position:absolute; left:5px; top:765px;" ><img src="../img/download_4_3.jpg"></div>
+                <div id="id_dl_btn_4_4" class="goOutBtn" style="position:absolute; left:5px; top:1145px;" ><img src="../img/download_4_4.jpg"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="id_header"></div>
+    <div id="id_desc" style="position:absolute; top:131px;"></div>
+    <div id="id_footer"></div>
+    <div id="id_popupwin"></div>
+    <div id="id_tips"></div>
+    <div id="id_btnTop"></div>
+    
+
+<script>
+/////////////////// 初始化基础配置相关 ///////////////////
+var zHead = document.getElementsByTagName('head')[0];
+var zScript = document.createElement('script');
+zScript.type = 'text/javascript';
+zScript.src = '../lib/mine/common.js?ver='+$.cookie('commonJsVer');
+zScript.onload = zScript.onreadystatechange = function() {
+    if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete" ){
+        common.init(['cp_headerB', 'cp_footerB', "cp_desc", "cp_btn_top"]);
+    }
+}
+zHead.appendChild(zScript);
+var id_interval = 0;
+window.onload = function ready(){id_interval=setInterval(function(){if(common!=undefined && common.JS_IS_LOADED==true){clearInterval(id_interval); init();}}, 100);};
+/////////////////// 初始化基础配置相关 ///////////////////
+window.onresize = windowResize;
+
+var endHeight = 1500;
+var curIndex = 1;
+
+//初始化
+function init() {
+    common.init();
+    cp_headerB.init("id_header", 4);
+    cp_desc.init("id_desc");
+    cp_footerB.init("id_footer");
+    cp_footerB.updateTop(endHeight);
+    cp_btn_top.init("id_btnTop");
+    $('#id_dl_btn_0_1').click({myType:"id_dl_btn_0_1"}, btnClickHandler);
+    $('#id_dl_btn_0_2').click({myType:"id_dl_btn_0_2"}, btnClickHandler);
+    $('#id_dl_btn_0_3').click({myType:"id_dl_btn_0_3"}, btnClickHandler);
+    $('#id_dl_btn_0_4').click({myType:"id_dl_btn_0_4"}, btnClickHandler);
+    $('#id_dl_btn_1_1').click({myType:"id_dl_btn_1_1"}, btnClickHandler);
+    $('#id_dl_btn_2_0_1').click({myType:"id_dl_btn_2_0_1"}, btnClickHandler);
+    $('#id_dl_btn_2_0_2').click({myType:"id_dl_btn_2_0_2"}, btnClickHandler);
+    // $('#id_dl_btn_2_1_1').click({myType:"id_dl_btn_2_1_1"}, btnClickHandler);
+    // $('#id_dl_btn_2_1_2').click({myType:"id_dl_btn_2_1_2"}, btnClickHandler);
+    $('#id_dl_btn_2_1_3').click({myType:"id_dl_btn_2_1_3"}, btnClickHandler);
+    $('#id_dl_btn_2_1_4').click({myType:"id_dl_btn_2_1_4"}, btnClickHandler);
+    $('#id_dl_btn_2_1_5').click({myType:"id_dl_btn_2_1_5"}, btnClickHandler);
+    $('#id_dl_btn_2_1_6').click({myType:"id_dl_btn_2_1_6"}, btnClickHandler);
+    $('#id_dl_btn_2_2_1').click({myType:"id_dl_btn_2_2_1"}, btnClickHandler);
+    $('#id_dl_btn_2_2_2').click({myType:"id_dl_btn_2_2_2"}, btnClickHandler);
+    $('#id_dl_btn_2_2_3').click({myType:"id_dl_btn_2_2_3"}, btnClickHandler);
+    $('#id_dl_btn_2_2_4').click({myType:"id_dl_btn_2_2_4"}, btnClickHandler);
+    $('#id_dl_btn_3_1').click({myType:"id_dl_btn_3_1"}, btnClickHandler);
+    $('#id_dl_btn_3_2').click({myType:"id_dl_btn_3_2"}, btnClickHandler);
+    $('#id_dl_btn_4_1').click({myType:"id_dl_btn_4_1"}, btnClickHandler);
+    $('#id_dl_btn_4_2').click({myType:"id_dl_btn_4_2"}, btnClickHandler);
+    $('#id_dl_btn_4_3').click({myType:"id_dl_btn_4_3"}, btnClickHandler);
+    $('#id_dl_btn_4_4').click({myType:"id_dl_btn_4_4"}, btnClickHandler);
+     
+
+    selectTitle(2);
+    windowResize();
+
+    timerRun();
+    timerId = setInterval(timerRun, common.REFRESH_TIME);
+    $('#id_main_page').show();
+}
+
+//窗口尺寸重置
+function windowResize()
+{
+    var zScale = common.initScale(1);
+    zScale = (zScale<1) ? 1 : zScale;
+
+    var zMyWidth = document.body.clientWidth;
+    var zObjWidth = parseInt($('#id_main_page').css("width"))*zScale;
+    
+    var zMiddleWidth = (zMyWidth-zObjWidth)/2/zScale;
+    $('#id_main_page').css({"left":zMiddleWidth+"px"});
+    cp_headerB.windowResize(zMiddleWidth);
+    cp_desc.windowResize(zMiddleWidth);
+    cp_footerB.windowResize(zMiddleWidth);
+    cp_footerB.updateTop(endHeight);
+}
+
+//按钮点击事件
+function btnClickHandler(p_obj_event){
+    switch(p_obj_event.data.myType){
+        case "id_dl_btn_0_1":
+            selectTitle(1);
+            break;
+        case "id_dl_btn_0_2":
+            selectTitle(2);
+            break;
+        case "id_dl_btn_0_3":
+            selectTitle(3);
+            break;
+        case "id_dl_btn_0_4":
+            selectTitle(4);
+            break;
+        case "id_dl_btn_2_0_1":
+            selectTitle_B(1);
+            break;
+        case "id_dl_btn_2_0_2":
+            selectTitle_B(2);
+            break;
+        case "id_dl_btn_2_1_1":
+            window.open("https://github.com/WaltonChain/WaltonWallet_Win", "_blank"); 
+            break;
+        case "id_dl_btn_2_1_2":
+            window.open("https://www.waltonchain.org/templets/default/doc/Web_Wallet_User_Manual.pdf", "_blank"); 
+            break;
+        case "id_dl_btn_2_1_3":
+            window.open("https://www.waltonchain.org/templets/default/doc/Waltonchain_Wallet_UI_Introduction-en.pdf", "_blank"); 
+            break;
+        case "id_dl_btn_2_1_4":
+            window.open("https://www.waltonchain.org/templets/default/doc/Waltonchain_Windows_Wallet_User_Manual.pdf", "_blank"); 
+            break;
+        case "id_dl_btn_2_1_5":
+            window.open("https://www.waltonchain.org/templets/default/v/Full_Node_Wallet_User_Manual.mp4", "_blank"); 
+            break;
+        case "id_dl_btn_2_1_6":
+            window.open("https://www.waltonchain.org/templets/default/v/VIEDO_OF_THE_LAUNCH_OF_WALTONCHAIN-en.mp4", "_blank"); 
+            break;
+        case "id_dl_btn_2_2_1":
+            window.open("https://github.com/WaltonChain/WaltonWallet_Android", "_blank"); 
+            break;
+        case "id_dl_btn_2_2_2":
+            window.open("https://play.google.com/store/apps/details?id=com.waltonchain.wtcwallet", "_blank"); 
+            break;
+        case "id_dl_btn_2_2_3":
+            window.open("https://www.waltonchain.org/templets/default/doc/WTC_Wallet_Android_User_Manual.pdf", "_blank"); 
+            break;
+        case "id_dl_btn_2_2_4":
+            window.open("https://www.waltonchain.org/templets/default/v/android-live-video.mp4", "_blank"); 
+            break;
+        case "id_dl_btn_1_1":
+            window.open("https://www.waltonchain.org/templets/default/doc/Waltonchain_Blockchain_Explorer_User_Manual.pdf", "_blank"); 
+            break;
+        case "id_dl_btn_3_1":
+            window.open("https://www.waltonchain.org/templets/default/d/GPU_MINING_64.zip", "_blank"); 
+            break;
+        case "id_dl_btn_3_2":
+            window.open("https://www.waltonchain.org/templets/default/doc/Waltonchain_Windows_GPU_Mining_User_Manual.pdf", "_blank"); 
+            break;
+        case "id_dl_btn_4_1":
+            window.open("https://www.waltonchain.org/en/Uploads/2019-04-25/5cc171763aebb.pdf", "_blank"); 
+            break;
+        case "id_dl_btn_4_2":
+            window.open("https://www.waltonchain.org/templets/default/doc/RFID-based_Solution_for_SMEN.pptx", "_blank"); 
+            break;
+        case "id_dl_btn_4_3":
+            window.open("https://www.waltonchain.org/templets/default/doc/RFID_Industrial_Manufacturing_Lean_Management_Practical_Project.doc", "_blank"); 
+            break;
+        case "id_dl_btn_4_4":
+            window.open("ttps://www.waltonchain.org/templets/default/doc/The_Clothing_Store_RFID_Management_Solution_for_TRIES.pptx", "_blank"); 
+            break;
+    }
+}
+
+//选择标题
+function selectTitle(p_int_index){
+    curIndex = p_int_index;
+    resetBtn();
+    $('#id_dl_btn_0_'+curIndex).addClass("dl_btn_1_select");
+
+    resetBg();
+    $('#id_dl_content_'+curIndex).show();
+
+    endHeight = 750 + 90 + parseInt($('#id_dl_content_'+curIndex).css("height")) + 100;
+    cp_footerB.updateTop(endHeight);
+
+    if(curIndex == 2){
+        selectTitle_B(1);
+    }
+
+    var zMoveX = (p_int_index-1)*175;
+    $('#id_dl_title_line').css({"left":zMoveX+"px"});
+}
+function resetBtn(){
+    for(var i=1; i<=4; i++){
+        $('#id_dl_btn_0_'+i).removeClass("dl_btn_1_select");
+    }
+}
+function resetBg(){
+    for(var i=1; i<=4; i++){
+        $('#id_dl_content_'+i).hide();
+    }
+}
+
+//选择2的标题
+function selectTitle_B(p_int_index){
+    resetBtn_B();
+    $('#id_dl_btn_2_0_'+p_int_index).addClass("dl_btn_3_selected");
+
+    resetBg_B();
+    $('#id_dl_content_2_'+p_int_index).show();
+
+}
+function resetBtn_B(){
+    $('#id_dl_btn_2_0_1').removeClass("dl_btn_3_selected");
+    $('#id_dl_btn_2_0_2').removeClass("dl_btn_3_selected");
+}
+function resetBg_B(){
+    $('#id_dl_content_2_1').hide();
+    $('#id_dl_content_2_2').hide();
+}
+
+
+//定时运行(1分钟)
+function timerRun(){
+    cp_desc.updateDescInfo();
+}
+
+
+//////////////////////////////////// php相关 ////////////////////////////////////
+
+
+
+</script>
+
+</body>
+</html>

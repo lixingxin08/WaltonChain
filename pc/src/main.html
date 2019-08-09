@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>WaltonChain</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+    <link rel='icon' href='../img/icon.ico' type='image/x-ico' />
+    <script type="text/javascript" src="../../vendor/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../vendor/jquery/jquery.easing.1.3.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts-en.common.min.js"></script>
+</head>
+
+
+<body class="body_css">
+    <!--主页面容器-->
+    <div class="main_page" id="id_main_page">
+        <div class="main_top">
+            <div class="main_top_item">
+                <img src="../img/maintop1.png">
+                <div class="main_t_i_r">
+                    <span>Last Block</span>
+                    <span style="color:#00FFDA;font-size:24px">25sago</span>
+                </div>
+            </div>
+            <div class="main_top_item">
+                <img src="../img/maintop2.png">
+                <div class="main_t_i_r">
+                    <span>Last Block</span>
+                    <span style="color:#D88aff;font-size:24px">25sago</span>
+                </div>
+            </div>
+            <div class="main_top_item">
+                <img src="../img/maintop3.png">
+                <div class="main_t_i_r">
+                    <span>Last Block</span>
+                    <span style="color:#02b7e7;font-size:24px">25sago</span>
+                </div>
+            </div>
+            <div class="main_top_item">
+                <img src="../img/maintop4.png">
+                <div class="main_t_i_r">
+                    <span>Last Block</span>
+                    <span style="color:#f17fce;font-size:24px">25sago</span>
+                </div>
+            </div>
+        </div>
+        <div class="main_echarts">
+            <div id="echartsitem" class="echartsitem"></div>
+            <div id="echartsitem1" class="echartsitem"></div>
+            <div id="echartsitem2" class="echartsitem"></div>
+            <div id="echartsitem3" class="echartsitem"></div>
+            <div id="echartsitem4" class="echartsitem"></div>
+            <div id="echartsitem5" class="echartsitem echartsitem_last">
+                <div class="echarts_last_main">
+                    <span>Last Block Miner</span>
+                    <div class="echarts_last_content">
+                        <span class="echarts_last_id">Last Block212asdwweLast Block212asdwweLast Block212asdwweLast Block212asdwweLast Block212asdwweLast Block212asdwwe</span>
+                        <span class="flex_b"><ul class="flex_s">
+                            <div class="echarts_shadown echarts_shadown_top"></div>
+                            <li class="echarts_last_content_box"></li>
+                            <li class="echarts_last_content_box"></li>
+                            <li class="echarts_last_content_box"></li>
+                            <li class="echarts_last_content_box"></li>
+                            <li class="echarts_last_content_box"></li>
+                        </ul> <span>30</span></span>
+                        <span class="echarts_last_id">Last Block</span>
+                        <span class="flex_b echarts_last_id_btm"><ul class="flex_s">
+                            <div class="echarts_shadown echarts_shadown_bottom"></div>
+                            <li class="echarts_last_content_box"></li>
+                            <li class="echarts_last_content_box"></li>
+                        </ul> <span>5</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="id_main_block" class="main_block" style="top:924px">
+            <div id="id_main_block_title" class="main_block_title">
+                <div class="title_blue" style="position:absolute; left:35px; top:25px;">Latest Blocks</div>
+                <div id="id_main_block_title_content" class="title_grey" style="position:absolute; left:165px; top:25px;">Updated at</div>
+                <div class="main_block_title_line3"></div>
+            </div>
+            <div id="id_loading_1" style="position:absolute; top:120px; color:#aaa; font-size:30px; width:700px; text-align:center;">Loading . . .</div>
+            <div id="id_main_block_content" class="main_block_content"></div>
+            <div id="id_main_block_btn" class="main_block_btn textBtn">View Latest 100 Blocks</div>
+        </div>
+        <div id="id_main_tran" class="main_tran" style="top:924px">
+            <div id="id_main_tran_title" class="main_tran_title">
+                <div class="title_green" style="position:absolute; left:35px; top:25px;">Latest Transactions</div>
+                <div id="id_main_tran_title_content" class="title_grey" style="position:absolute; left:205px; top:25px;">Updated at</div>
+                <div class="main_tran_title_line3"></div>
+            </div>
+            <div id="id_loading_2" style="position:absolute; top:120px; color:#aaa; font-size:30px; width:700px; text-align:center;">Loading . . .</div>
+            <div id="id_main_tran_content" class="main_tran_content"></div>
+            <div id="id_main_tran_btn" class="main_tran_btn textBtn">View Latest 100 Transactions</div>
+        </div>
+    </div>
+
+    <div id="id_header"></div>
+    <div id="id_desc"></div>
+    <div id="id_footer"></div>
+    <div id="id_popupwin"></div>
+    <div id="id_tips"></div>
+    <div id="id_btnTop"></div>
+    <style>
+        ul li {
+            list-style: none
+        }
+
+        .main_top {
+            position: absolute;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 1200px;
+            top: 420px;
+            height: 140px;
+            margin: 0 auto;
+            background-color: #171d2a;
+        }
+
+        .main_top_item {
+            width: 25%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            color: #8e8e8e;
+            border: 1px solid #2a3041;
+            box-sizing: border-box
+        }
+
+        .main_t_i_r {
+            display: flex;
+            height: 75px;
+            justify-content: space-around;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main_echarts {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 1200px;
+            top: 594px;
+            height: 280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .echartsitem {
+            width: 400px;
+            height: 140px;
+            border: 1px solid #2a3041;
+            box-sizing: border-box
+        }
+
+        .echarts_last_main {
+            width: 400px;
+            height: 100px;
+            display: flex;
+            color: #8e8e8e;
+            padding: 20px 55px;
+            font-size: 20px;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .echarts_last_content {
+            width: 290px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: flex-start;
+            font-size: 12px
+        }
+
+        .echarts_last_id {
+            width: 290px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .flex_b {
+            width: 290px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #5f62d8
+        }
+
+        .flex_s {
+            width: 260px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .echarts_shadown {
+            width: 260px;
+            height: 10px;
+            background-color: #171d2a;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .echarts_last_content_box {
+            width: 10px;
+            height: 10px;
+            box-sizing: border-box;
+            border: 1px solid #000;
+            background-color: #5f62d8;
+        }
+
+        .echarts_last_id_btm {
+            color: #00b0a7
+        }
+
+        .echarts_last_id_btm li {
+            background-color: #00b0a7
+        }
+    </style>
+    <script>
+        /////////////////// 初始化基础配置相关 ///////////////////
+        var zHead = document.getElementsByTagName('head')[0];
+        var zScript = document.createElement('script');
+        zScript.type = 'text/javascript';
+        zScript.src = '../lib/mine/common.js?ver=' + $.cookie('commonJsVer');
+        zScript.onload = zScript.onreadystatechange = function () {
+            if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete") {
+                common.init(['cp_headerB', 'cp_footerB', "cp_desc", "cp_btn_top"]);
+            }
+        }
+        zHead.appendChild(zScript);
+        var id_interval = 0;
+        window.onload = function ready() { id_interval = setInterval(function () { if (common != undefined && common.JS_IS_LOADED == true) { clearInterval(id_interval); init(); } }, 100); };
+        /////////////////// 初始化基础配置相关 ///////////////////
+        window.onresize = windowResize;
+
+        var timerId = 0;
+        var blockList = [];
+        var tranList = [];
+        var showBlockCounter = 0;
+        var showBlockTimeIdList = [];
+        var showTranCounter = 0;
+        var showTranTimeIdList = [];
+        var screenScale = 1;
+        var endHeight = 1470;
+
+
+        //初始化
+        function init() {
+            common.init();
+
+            cp_headerB.init("id_header", 1);
+            cp_desc.init("id_desc");
+            cp_footerB.init("id_footer");
+            cp_btn_top.init("id_btnTop");
+            $('#id_main_block_btn').click({ myType: "id_main_block_btn" }, btnClickHandler);
+            $('#id_main_tran_btn').click({ myType: "id_main_tran_btn" }, btnClickHandler);
+
+            windowResize();
+
+            timerRun();
+            timerId = setInterval(timerRun, common.REFRESH_TIME);
+            $('#id_main_page').show();
+        }
+
+        //窗口尺寸重置
+        function windowResize() {
+            var zScale = common.initScale(1);
+            zScale = (zScale < 1) ? 1 : zScale;
+
+            // console.log(screenScale);
+            var zMyWidth = document.body.clientWidth;
+            var zObjWidth = parseInt($('#id_main_page').css("width")) * zScale;
+
+            var zMiddleWidth = (zMyWidth - zObjWidth) / 2 / zScale;
+            $('#id_main_page').css({ "left": zMiddleWidth + "px" });
+            cp_headerB.windowResize(zMiddleWidth);
+            cp_desc.windowResize(zMiddleWidth);
+            cp_footerB.windowResize(zMiddleWidth);
+
+            cp_footerB.updateTop(endHeight);
+        }
+
+        //按钮点击事件
+        function btnClickHandler(p_obj_event) {
+            switch (p_obj_event.data.myType) {
+                case "id_main_block_btn":
+                    common.gotoWebSite('blockDetail.html');
+                    break;
+                case "id_main_tran_btn":
+                    common.gotoWebSite('tranDetail.html');
+                    break;
+            }
+        }
+
+        //更新Block表
+        function updateBlockList() {
+            if (!blockList || blockList.length <= 0) {
+                console.log("main.updateBlockList() 更新失败,blockList为空.");
+                return;
+            }
+
+            var zLatestBlock = 0;
+            var zDifficulty = 0;
+            var zDiffTotal = 0;
+            var zAvgTime = 30.5;
+            var zAvgTimeList = [];
+            $("#id_main_block_content").html("");
+            var zHtmlCode = "";
+            for (var i = 0; i < blockList.length; i++) {
+                var zInfo = blockList[i];
+                var zTop = i * 80;
+                var zImgId = i % 10;
+                var zBlockNum = zInfo["blockNumer"];
+                var zMiner = zInfo["miner"];
+                var zTime = zInfo["timestamp"];
+                zAvgTimeList.push(new Date(zTime.replace(/-/g, "/")).getTime());
+                if (i == 0) {
+                    zLatestBlock = zBlockNum;
+                    common.setCookie("latestBlock", zLatestBlock);
+                    zDifficulty = (zInfo["difficulty"] / 1000000000).toFixed(2);
+                    $('#id_main_block_title_content').text("Updated at " + zTime);
+                }
+                zDiffTotal += parseInt(zInfo["difficulty"]);
+                if (i >= 10) {
+                    continue;
+                }
+                var zMiningReward = zInfo["mining_reward"];
+                var zTransactionCount = zInfo["transactionCount"];
+                zHtmlCode += '\
+                <div id="id_main_block_content_'+ i + '" style="position:absolute; top:' + zTop + 'px;">\
+                    <img src="../img/block_'+ zImgId + '.jpg" class="main_block_content_img">\
+                    <div class="main_block_title_line"></div>\
+                    <div class="main_block_content_txt1" style="left:76px; top:21px;">Block Number:</div>\
+                    <div id="id_main_block_content_txt1_'+ i + '" class="main_block_content_txt1" style="left:76px; top:44px;">Mining Rewards: ' + zMiningReward + '</div>\
+                    <div id="id_main_block_content_txt2_'+ i + '" class="main_block_content_txt1" style="left:315px; top:44px;">Transactions: ' + zTransactionCount + '</div>\
+                    <div class="main_block_content_txt1" style="left:380px; top:21px;">Miner:</div>\
+                    <div class="main_block_content_txt1" style="left:364px; top:44px; text-align:right;">'+ zTime + '</div>\
+                    <div id="id_main_block_content_txt3_'+ i + '" class="main_block_content_txt2" style="left:170px; top:20px;" onclick="onBlockBlockClickHandle(' + i + ')">' + zBlockNum + '</div>\
+                    <div id="id_main_block_content_txt4_'+ i + '" class="main_block_content_txt2" style="left:426px; top:20px; width:140px !important; text-overflow:ellipsis;" onclick="onBlockMinerClickHandle(' + i + ')">' + zMiner + '</div>\
+                </div>\
+                ';
+            }
+            $("#id_main_block_content").html(zHtmlCode);
+
+            //计算平均时间
+            var zDiffTimeTotal = 0;
+            for (var j = 1; j < zAvgTimeList.length; j++) {
+                var zNewTime = zAvgTimeList[j - 1];
+                var zOldTime = zAvgTimeList[j];
+                var zDiffTime = zNewTime - zOldTime;
+                zDiffTimeTotal += zDiffTime;
+                // console.log(j,zNewTime,zOldTime,zDiffTime,zDiffTimeTotal);
+            }
+            var zFenMu = zAvgTimeList.length - 1;
+            if (zFenMu > 0) {
+                zAvgTime = (zDiffTimeTotal / zFenMu / 1000);
+            }
+            var zDiffAvg = (zDiffTotal / blockList.length / zAvgTime / 1000000000);
+            if (common.getCookie("desc_4")) {
+                zDiffAvg = (zDiffTotal / blockList.length / common.getCookie("desc_4") / 1000000000);
+            }
+            // console.log(zLatestBlock, zAvgTime, zDifficulty);
+            cp_desc.setBlockInfo(zLatestBlock, zAvgTime.toFixed(2), zDiffAvg.toFixed(2), zDifficulty);
+        }
+
+        //更新Transction表
+        function updateTranList() {
+            if (!tranList || tranList.length <= 0) {
+                console.log("main.updateTranList() 更新失败,tranList为空.");
+                return;
+            }
+            $("#id_main_tran_content").html("");
+            var zHtmlCode = "";
+            for (var i = 0; i < tranList.length; i++) {
+                var zInfo = tranList[i];
+                var zTop = i * 80;
+                var zBlockNum = zInfo["blockNumber"];
+                var zHash = zInfo["tx_hash"];
+                var zAddrFrom = zInfo["addressFrom"];
+                var zAddrTo = zInfo["addressTo"];
+                var zTime = zInfo["timestamp"];
+                if (i == 0) {
+                    $('#id_main_tran_title_content').text("Updated at " + zTime);
+                }
+                zHtmlCode += '\
+                <div id="id_main_tran_content_'+ i + '" style="position:absolute; top:' + zTop + 'px;">\
+                    <div class="main_tran_title_line"></div>\
+                    <div class="main_tran_content_txt1" style="left:20px; top:21px;">Block Number:</div>\
+                    <div class="main_tran_content_txt1" style="left:20px; top:44px;">Hash:</div>\
+                    <div class="main_tran_content_txt1" style="left:210px; top:21px; text-align:right;">Sender:</div>\
+                    <div class="main_tran_content_txt1" style="left:210px; top:44px; text-align:right;">Receiver:</div>\
+                    <div id="id_main_tran_content_txt1_'+ i + '" class="main_block_content_txt2" style="left:416px; top:20px; width:150px !important; text-overflow:ellipsis;" onclick="onTranSenderClickHandle(' + i + ')">' + zAddrFrom + '</div>\
+                    <div id="id_main_tran_content_txt2_'+ i + '" class="main_block_content_txt2" style="left:416px; top:44px; width:150px !important; text-overflow:ellipsis;" onclick="onTranReceiverClickHandle(' + i + ')">' + zAddrTo + '</div>\
+                    <div id="id_main_tran_content_txt3_'+ i + '" class="main_block_content_txt2" style="left:110px; top:20px;" onclick="onTranBlockClickHandle(' + i + ')">' + zBlockNum + '</div>\
+                    <div id="id_main_tran_content_txt4_'+ i + '" class="main_block_content_txt2" style="left:60px; top:44px; width:150px !important; text-overflow:ellipsis;" onclick="onTranHashClickHandle(' + i + ')">' + zHash + '</div>\
+                </div>\
+                ';
+            }
+            $("#id_main_tran_content").html(zHtmlCode);
+        }
+
+
+        //block显示特效
+        function clearTimeoutShowBlock() {
+            for (var i = 0; i < showBlockTimeIdList.length; i++) {
+                var zTimeId = showBlockTimeIdList[i];
+                clearTimeout(zTimeId);
+            }
+            showBlockCounter = 0;
+        }
+        function timeoutShowBlock() {
+            var zTimeId = setTimeout(function () {
+                $("#id_main_block_content_" + showBlockCounter).fadeIn(500);
+                showBlockCounter++;
+                if (showBlockCounter < blockList.length) {
+                    timeoutShowBlock();
+                }
+            }, 100);
+            showBlockTimeIdList.push(zTimeId);
+        }
+
+        //tran显示特效
+        function clearTimeoutShowTran() {
+            for (var i = 0; i < showTranTimeIdList.length; i++) {
+                var zTimeId = showTranTimeIdList[i];
+                clearTimeout(zTimeId);
+            }
+            showTranCounter = 0;
+        }
+        function timeoutShowTran() {
+            var zTimeId = setTimeout(function () {
+                $("#id_main_tran_content_" + showTranCounter).fadeIn(500);
+                showTranCounter++;
+                if (showTranCounter < tranList.length) {
+                    timeoutShowTran();
+                }
+            }, 100);
+            showTranTimeIdList.push(zTimeId);
+        }
+
+        //块-块被点击
+        function onBlockBlockClickHandle(p_int_index) {
+            var zSearchValue = $('#id_main_block_content_txt3_' + p_int_index).text();
+            cp_headerB.goToSearch(1, zSearchValue);
+        }
+
+        //块-Miner被点击
+        function onBlockMinerClickHandle(p_int_index) {
+            var zSearchValue = $('#id_main_block_content_txt4_' + p_int_index).text();
+            cp_headerB.goToSearch(2, zSearchValue);
+        }
+
+        //Tran-Sender被点击
+        function onTranSenderClickHandle(p_int_index) {
+            var zSearchValue = $('#id_main_tran_content_txt1_' + p_int_index).text();
+            cp_headerB.goToSearch(2, zSearchValue);
+        }
+
+        //Tran-Reciever被点击
+        function onTranRecieverClickHandle(p_int_index) {
+            var zSearchValue = $('#id_main_tran_content_txt2_' + p_int_index).text();
+            cp_headerB.goToSearch(2, zSearchValue);
+        }
+
+        //Tran-块被点击
+        function onTranBlockClickHandle(p_int_index) {
+            var zSearchValue = $('#id_main_tran_content_txt3_' + p_int_index).text();
+            cp_headerB.goToSearch(1, zSearchValue);
+        }
+
+        //Tran-Hash被点击
+        function onTranHashClickHandle(p_int_index) {
+            var zSearchValue = $('#id_main_tran_content_txt4_' + p_int_index).text();
+            cp_headerB.goToSearch(3, zSearchValue);
+        }
+
+        //定时运行(1分钟)
+        function timerRun() {
+            php_getLatestBlocks();
+            php_getLatestTransactions();
+
+            cp_desc.updateDescInfo();
+        }
+
+        //////////////////////////////////// php相关 ////////////////////////////////////
+        function php_getLatestBlocks() {
+            $.ajax({
+                // url: common.getPhpUrl("getLatestBlocks/100"),
+                url: common.getPhpUrl("getLatestBlocksByPage/1/10"),
+                type: "get",
+                data: {},
+                dataType: "json", //指定服务器返回的数据类型
+                success: function (evt) {
+                    console.log("php_getLatestBlocks success:");
+                    console.log(evt);
+                    blockList = evt;
+                    updateBlockList();
+                    $('#id_loading_1').hide();
+                }, error: function (error) {
+                    console.log("php_getLatestBlocks error:" + error.msg);
+                }
+            });
+        }
+
+        function php_getLatestTransactions() {
+            $.ajax({
+                url: common.getPhpUrl("getLatestTransactions/10"),
+                type: "get",
+                data: {},
+                dataType: "json", //指定服务器返回的数据类型
+                success: function (evt) {
+                    console.log("php_getLatestTransactions success:");
+                    console.log(evt);
+                    tranList = evt;
+                    updateTranList();
+                    $('#id_loading_2').hide();
+                }, error: function (error) {
+                    console.log("php_getLatestTransactions error:" + error.msg);
+                }
+            });
+        }
+        /**echarts**/
+        var myChart = echarts.init(document.getElementById('echartsitem'));
+        var myChart1 = echarts.init(document.getElementById('echartsitem1'));
+        var myChart2 = echarts.init(document.getElementById('echartsitem2'));
+        var myChart3 = echarts.init(document.getElementById('echartsitem3'));
+        var myChart4 = echarts.init(document.getElementById('echartsitem4'));
+        let bar_color = '#10a0de'
+        let bared_color = '#38c3ff'
+        let colortype = [1, 2, 3]
+        let echart_data = [0.1, 0.3, 0.9, 0.1, 0.40, 0.9, 0.3, 0.5, 0.9, 0.2]
+        let echarts_title = ['Block Time']
+        let loadingBackground = { textColor: '#8e8e8e', maskColor: '#171d2a' }
+        myChart.showLoading(loadingBackground)
+        myChart1.showLoading(loadingBackground)
+        myChart2.showLoading(loadingBackground)
+        myChart3.showLoading(loadingBackground)
+        myChart4.showLoading(loadingBackground)
+        /**other echarts**/
+        option = {
+            backgroundColor: ' #171d2a',
+            title: {
+                text: echarts_title[0],
+                left: 50,
+                top: 20,
+                textStyle: {
+                    color: '#8e8e8e',
+                    fontSize: 20
+                }
+            },
+            xAxis: [
+                {
+
+                    type: 'category',
+                    boundaryGap: true,
+                    data: (function () {
+                        var now = new Date();
+                        var res = [];
+                        var len = 10;
+                        while (len--) {
+                            res.unshift(now.toLocaleTimeString().replace(/^\D*/, ''));
+                            now = new Date(now - 2000);
+                        }
+                        return res;
+                    })()
+                },
+                {
+                    type: 'category',
+                    boundaryGap: true,
+                    data: (function () {
+                        var res = [];
+                        var len = 10;
+                        while (len--) {
+                            res.push(10 - len - 1);
+                        }
+                        return res;
+                    })()
+                }
+            ],
+            yAxis: [
+                {
+                    show: false,
+                    type: 'value',
+                    scale: true,
+                    name: '价格',
+                    max: 1600,
+                    min: 0,
+                    boundaryGap: [0.2, 0.2],
+
+                },
+                {
+                    show: false,
+                    type: 'value',
+                    scale: true,
+                    name: '预购量',
+                    max: 1600,
+                    min: 0,
+                    boundaryGap: [0.2, 0.2]
+                }
+            ],
+            grid: {
+                left: 50,
+                top: 0,
+                right: 50,
+                bottom: 0
+            },
+            series: [
+                {
+                    name: '预购队列',
+                    type: 'bar',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    data: (function () {
+                        var res = [];
+                        var len = 0;
+                        while (len < 10) {
+                            res.push(echart_data[len] * 1000);
+                            len++
+                        }
+                        return res;
+                    })(),
+                    itemStyle: {
+                        normal: {
+                            color: function (params) {
+                                let echarts_color = ['#69c4d7', '#00b0a7', '#c78d2f']
+                                if (params.data < 333) {
+                                    return echarts_color[0]
+                                } else if (params.data > 333 && params.data < 666) {
+                                    return echarts_color[1]
+                                } else {
+                                    return echarts_color[2]
+                                }
+                            }
+                        },
+                        emphasis: {
+                            color: function (params) {
+                                let echarts_hovercolor = ['#80e9ff', '#00dfd4', '#f2ad3e']
+                                if (params.data < 333) {
+                                    return echarts_color[0]
+                                } else if (params.data > 333 && params.data < 666) {
+                                    return echarts_color[1]
+                                } else {
+                                    return echarts_color[2]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    name: '最新成交价',
+                    type: 'line',
+                    data: (function () {
+                        var res = [];
+                        var len = 0;
+                        // while (len < 10) {
+                        //     res.push((echart_data[len] * 1000).toFixed(1) - 0);
+                        //     len++;
+                        // }
+                        return res;
+                    })(),
+                }
+            ]
+        };
+        /**number3 echarts**/
+        option1 = {
+            backgroundColor: ' #171d2a',
+            title: {
+                text: echarts_title[0],
+                left: 50,
+                top: 20,
+                textStyle: {
+                    color: '#8e8e8e',
+                    fontSize: 20
+                }
+            },
+            textStyle: {
+                color: '#8e8e8e'
+            },
+            xAxis: [
+                {
+                    show:true,
+                    type: 'category',
+                    boundaryGap: true,
+                    data: (function () {
+                        var now = new Date();
+                        var res = [];
+                        var len = 10;
+                        while (len--) {
+                            res.unshift(now.toLocaleTimeString().replace(/^\D*/, ''));
+                            now = new Date(now - 2000);
+                        }
+                        return res;
+                    })(),
+                    axisLabel:{
+                        formatter:function(){
+                            let texts='0s'
+                            return texts
+                        }
+                    }
+                },
+                {
+                    type: 'category',
+                    boundaryGap: true,
+                    data: (function () {
+                        var res = [];
+                        var len = 10;
+                        while (len--) {
+                            res.push(10 - len - 1);
+                        }
+                        return res;
+                    })()
+                }
+            ],
+            yAxis: [
+                {
+                    show: false,
+                    type: 'value',
+                    scale: true,
+                    name: '价格',
+                    max: 1600,
+                    min: 0,
+                    boundaryGap: [0.2, 0.2],
+
+                },
+                {
+                    show: false,
+                    type: 'value',
+                    scale: true,
+                    name: '预购量',
+                    max: 1600,
+                    min: 0,
+                    boundaryGap: [0.2, 0.2]
+                }
+            ],
+            grid: {
+                left: 50,
+                top: 50,
+                right: 50,
+                bottom: 30
+            },
+            series: [
+                {
+                    name: '预购队列',
+                    type: 'bar',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    data: (function () {
+                        var res = [];
+                        var len = 0;
+                        while (len < 10) {
+                            res.push(echart_data[len] * 1000);
+                            len++
+                        }
+                        return res;
+                    })(),
+                    itemStyle: {
+                        normal: {
+                            color: function (params) {
+                                let echarts_color = ['#69c4d7', '#00b0a7', '#c78d2f']
+                                if (params.data < 333) {
+                                    return echarts_color[0]
+                                } else if (params.data > 333 && params.data < 666) {
+                                    return echarts_color[1]
+                                } else {
+                                    return echarts_color[2]
+                                }
+                            }
+                        },
+                        emphasis: {
+                            color: function (params) {
+                                let echarts_hovercolor = ['#80e9ff', '#00dfd4', '#f2ad3e']
+                                if (params.data < 333) {
+                                    return echarts_color[0]
+                                } else if (params.data > 333 && params.data < 666) {
+                                    return echarts_color[1]
+                                } else {
+                                    return echarts_color[2]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    name: '最新成交价',
+                    type: 'line',
+                    data: (function () {
+                        var res = [];
+                        var len = 0;
+                        while (len < 10) {
+                            res.push((echart_data[len] * 1000).toFixed(1) - 0);
+                            len++;
+                        }
+                        return res;
+                    })(),
+                }
+            ]
+        };
+
+        let app = 11;
+        setTimeout(function () {
+            myChart.setOption(option);
+            myChart1.setOption(option);
+            myChart2.setOption(option1);
+            myChart3.setOption(option);
+            myChart4.setOption(option);
+            myChart.hideLoading()
+            myChart1.hideLoading()
+            myChart2.hideLoading()
+            myChart3.hideLoading()
+            myChart4.hideLoading()
+        }, 1000)
+        setInterval(function () {
+            var axisData = (new Date()).toLocaleTimeString().replace(/^\D*/, '');
+            var data0 = option.series[0].data;
+            var data1 = option.series[1].data;
+            let adddata = Math.round(Math.random() * 1000)
+            data0.shift();
+            data0.push(adddata);
+            data1.shift();
+            data1.push((adddata).toFixed(1) - 0);
+
+            option.xAxis[0].data.shift();
+            option.xAxis[0].data.push(axisData);
+            option.xAxis[1].data.shift();
+            option.xAxis[1].data.push(app++);
+
+            myChart.setOption(option);
+            myChart1.setOption(option);
+            myChart2.setOption(option1);
+            myChart3.setOption(option);
+            myChart4.setOption(option);
+
+        }, 5000);
+        /**last-echarts**/
+        let lastecharts1 = document.getElementsByClassName('echarts_shadown_top')
+        let lastecharts2 = document.getElementsByClassName('echarts_shadown_bottom')
+        let [li_length1, li_length2] = [10, 2]
+        lastecharts1[0].style.left = li_length1 * 30 + 'px'
+        lastecharts2[0].style.left = li_length2 * 30 + 'px'
+    </script>
+
+</body>
+
+</html>
